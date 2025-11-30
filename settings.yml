@@ -1,0 +1,8 @@
+settings:
+  language: ru
+  presence:
+    refresh_time: 8
+    timer_mode: general # divided/general
+  core:
+    logger_level: DEBUG
+    profiler: True
