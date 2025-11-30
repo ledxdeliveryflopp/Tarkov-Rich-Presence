@@ -2,3 +2,6 @@ locations:
   bigmap:
     ru: Таможня
     en: Custom
+  factory4_day:
+    ru: Завод
+    en: Factory

@@ -11,7 +11,7 @@ class EftPresenceService(Presence):
         self.connect()
 
     @logger.catch
-    def set_raid_presence(self, raid_location: str):
+    def __set_raid_presence(self, raid_location: str):
         logger.info('Setting raid presence...')
         self.update(
             activity_type=ActivityType.PLAYING,
@@ -22,7 +22,7 @@ class EftPresenceService(Presence):
         logger.info('Raid presence set successfully!')
 
     @logger.catch
-    def set_lobby_presence(self):
+    def __set_lobby_presence(self):
         logger.info('Setting lobby presence...')
         self.update(
                 activity_type=ActivityType.PLAYING,
@@ -38,13 +38,13 @@ class EftPresenceService(Presence):
         raid_location = log_analyzer.get_last_raid_location()
         if not raid_location:
             pass
-        log_analyzer.delete_player_in_group()
+        # log_analyzer.delete_player_in_group()
         log_analyzer.add_new_player_in_group()
         raid_finish = log_analyzer.get_disconnect_message()
         if raid_finish is True:
-            self.set_lobby_presence()
+            self.__set_lobby_presence()
         else:
-            self.set_raid_presence(raid_location=raid_location)
+            self.__set_raid_presence(raid_location=raid_location)
         logger.info('---------------PRESENCE SET FINISH---------------')
 
 
