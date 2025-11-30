@@ -83,6 +83,9 @@ class LogAnalyzer:
                 if 'TRACE-NetworkGameCreate profileStatus' in line:
                     last_info = line
                     self.last_game_log_index = index
+        if not last_info:
+            logger.info('Last raid info not found!')
+            return None
         logger.info(f'Last raid info found -> {last_info}, line index -> {index + 1}')
         raid_info = last_info.split(',')
         profile_uid_data = raid_info[0].split(' ')

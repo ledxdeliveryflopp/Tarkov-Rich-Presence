@@ -37,7 +37,9 @@ class EftPresenceService(Presence):
         logger.info('---------------SET PRESENCE---------------')
         raid_location = log_analyzer.get_last_raid_location()
         if not raid_location:
-            pass
+            log_analyzer.add_new_player_in_group()
+            self.__set_lobby_presence()
+            return
         # log_analyzer.delete_player_in_group()
         log_analyzer.add_new_player_in_group()
         raid_finish = log_analyzer.get_disconnect_message()
