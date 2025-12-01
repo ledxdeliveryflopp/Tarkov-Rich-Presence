@@ -1,5 +1,5 @@
 settings:
-  language: ru
+  language: en
   presence:
     refresh_time: 8
     timer_mode: general # divided/general

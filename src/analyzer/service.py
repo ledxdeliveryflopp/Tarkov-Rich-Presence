@@ -48,7 +48,7 @@ class LogAnalyzer:
     @staticmethod
     @logger.catch
     def __get_location_name(location_tech_name: str, lang: Literal['ru', 'en']) -> str:
-        logger.debug(f'Get location -> {location_tech_name}...')
+        logger.debug(f'Get location -> {location_tech_name}, lang -> {lang}')
         logger.info('Get location name...')
         with open('locations.yml', encoding='utf-8') as locations_data:
             data = yaml.load(locations_data, Loader=SafeLoader)
@@ -141,7 +141,7 @@ class LogAnalyzer:
                 short_game_id=short_game_id,
             )
         logger.info(f'Last raid info found!')
-        location = self.__get_location_name(location_tech_name=tech_location, lang='ru')
+        location = self.__get_location_name(location_tech_name=tech_location, lang=settings.language)
         location_image = self.__get_location_image(location_tech_name=tech_location)
         return location, location_image
 

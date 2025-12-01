@@ -2,6 +2,8 @@ from loguru import logger
 from pypresence import Presence, ActivityType
 
 from src.analyzer.service import log_analyzer
+from src.const import const
+from src.settings import settings
 
 
 class EftPresenceService(Presence):
@@ -13,10 +15,15 @@ class EftPresenceService(Presence):
     @logger.catch
     def __set_raid_presence(self, raid_location: str, location_image: str):
         logger.info('Setting raid presence...')
+        presence_details = const.presence.in_raid[settings.language]
+        presence_state_part = const.presence.location[settings.language]
+        presence_state = f'{presence_state_part} {raid_location}'
+        logger.debug(f'Presence details -> {presence_details}')
+        logger.debug(f'Presence state -> {presence_state}')
         self.update(
             activity_type=ActivityType.PLAYING,
-            details='В Рейде',
-            state=f'Локация: {raid_location}',
+            details=presence_details,
+            state=presence_state,
             party_size=[log_analyzer.current_player_count, 5],
             large_image=location_image,
         )
@@ -25,10 +32,14 @@ class EftPresenceService(Presence):
     @logger.catch
     def __set_lobby_presence(self):
         logger.info('Setting lobby presence...')
+        presence_details = const.presence.in_lobby[settings.language]
+        presence_state = const.presence.in_lobby_state[settings.language]
+        logger.debug(f'Presence details -> {presence_details}')
+        logger.debug(f'Presence state -> {presence_state}')
         self.update(
                 activity_type=ActivityType.PLAYING,
-                details='В Схроне',
-                state=f'Чиллит',
+                details=presence_details,
+                state=presence_state,
                 party_size=[log_analyzer.current_player_count, 5],
             )
         logger.info('Lobby presence set successfully!')

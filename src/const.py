@@ -8,6 +8,12 @@ class PresenceConst:
 
     allowed_timer_mode: set = {'general', 'divided'}
 
+    in_raid: dict = {'ru': 'В рейде', 'en': 'In raid'}
+    location: dict = {'ru': 'Локация: ', 'en': 'Location: '}
+
+    in_lobby: dict = {'ru': 'В схроне', 'en': 'In lobby'}
+    in_lobby_state: dict = {'ru': 'Пока что хз', 'en': 'IDK'}
+
 
 class LangConst:
 
