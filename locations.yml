@@ -1,7 +1,85 @@
 locations:
+  factory4_day:
+    ru: Завод(день)
+    en: Factory(day)
+    image:
+      status: False
+      code: None
+  factory4_night:
+    ru: Завод(ночь)
+    en: Factory(night)
+    image:
+      status: False
+      code: None
   bigmap:
     ru: Таможня
-    en: Custom
-  factory4_day:
-    ru: Завод
-    en: Factory
+    en: Customs
+    image:
+      status: False
+      code: None
+  woods:
+    ru: Лес
+    en: Woods
+    image:
+      status: False
+      code: None
+  Labyrinth:
+    ru: Лабиринт
+    en: The Labyrinth
+    image:
+      status: False
+      code: None
+  lighthouse:
+    ru: Маяк
+    en: Lighthouse
+    image:
+      status: False
+      code: None
+  interchange:
+    ru: Развязка
+    en: Interchange
+    image:
+      status: False
+      code: None
+  shoreline:
+    ru: Берег
+    en: Shoreline
+    image:
+      status: False
+      code: None
+  rezervbase:
+    ru: Резерв
+    en: Reserve
+    image:
+      status: False
+      code: None
+  laboratory:
+    ru: Лаборатория
+    en: The Lab
+    image:
+      status: False
+      code: None
+  tarkovstreets:
+    ru: Улицы Таркова
+    en: Streets of Tarkov
+    image:
+      status: False
+      code: None
+  Sandbox:
+    ru: Эпицентр
+    en: Ground Zero
+    image:
+      status: True
+      code: sandbox
+  Sandbox_start:
+    ru: Эпицентр(Новички)
+    en: Ground Zero(Beginners)
+    image:
+      status: True
+      code: sandbox
+  Sandbox_high:
+    ru: Эпицентр(Опытные)
+    en: Ground Zero(Experienced)
+    image:
+      status: True
+      code: sandbox
