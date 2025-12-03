@@ -1,3 +1,5 @@
+import bisect
+
 import httpx
 from loguru import logger
 
@@ -39,22 +41,23 @@ class ProfileGrabber:
     @logger.catch
     def __convert_exp_to_lvl(self, exp: float) -> int:
         logger.info('Start converting exp to lvl...')
-        closest_key = min(const.levels.range.keys(), key=lambda x: abs(x - exp))
+        logger.debug(f'Start converting exp -> {exp}')
+        last_exp_values = [(entry['last_exp'], key) for key, entry in const.levels.range.items()]
+        last_exp_values.sort()
+        index = bisect.bisect_right(last_exp_values, (exp, float('inf')))
+        closest_key = last_exp_values[index - 1][1] if index > 0 else None
         logger.debug(f'Closest level -> {closest_key}')
         logger.info('Exp converted to lvl!')
-        return const.levels.range[closest_key]
+        return closest_key
 
     @logger.catch
     def __validated_user_info(self, response_data: dict) -> ProfileSchemas | None:
         logger.info('Validating user profile info...')
         user_info = ProfileSchemas(**response_data)
-        logger.info(f'User username -> {user_info.info.nickname}')
-        logger.debug(f'User side -> {user_info.info.side}')
-        logger.debug(f'User prestige -> {user_info.info.prestige_level}')
-        logger.debug(f'User exp -> {user_info.info.experience}')
         user_level = self.__convert_exp_to_lvl(exp=user_info.info.experience)
         user_info.info.experience = user_level
-        logger.debug(f'User level -> {user_level}')
+        logger.debug(f'User info -> {user_info}')
+        logger.info('Validating user profile info is successful!')
         return user_info
 
 
