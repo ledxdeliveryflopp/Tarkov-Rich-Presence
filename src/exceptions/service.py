@@ -28,6 +28,11 @@ class ExceptionsService:
         raise Exception('Empty application core settings level')
 
     @staticmethod
+    def empty_application_log_path(setting_info: Any):
+        logger.error(f'Empty log path settings level -> {setting_info}')
+        raise Exception('Empty application log path settings level')
+
+    @staticmethod
     def restricted_lang_setting(restricted_lang: Any):
         logger.error(f'Error while set -> {restricted_lang}, allowed langs -> {const.lang.allowed_langs}')
         raise Exception('Trying to set restricted lang')

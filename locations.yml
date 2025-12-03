@@ -3,68 +3,68 @@ locations:
     ru: Завод(день)
     en: Factory(day)
     image:
-      status: False
-      code: None
+      status: True
+      code: factory_day
   factory4_night:
     ru: Завод(ночь)
     en: Factory(night)
     image:
-      status: False
-      code: None
+      status: True
+      code: factory_night
   bigmap:
     ru: Таможня
     en: Customs
     image:
-      status: False
-      code: None
+      status: True
+      code: customs
   woods:
     ru: Лес
     en: Woods
     image:
-      status: False
-      code: None
+      status: True
+      code: woods
   Labyrinth:
     ru: Лабиринт
     en: The Labyrinth
     image:
-      status: False
-      code: None
+      status: True
+      code: labyrinth
   lighthouse:
     ru: Маяк
     en: Lighthouse
     image:
-      status: False
-      code: None
+      status: True
+      code: lighthouse
   interchange:
     ru: Развязка
     en: Interchange
     image:
-      status: False
-      code: None
+      status: True
+      code: interchange
   shoreline:
     ru: Берег
     en: Shoreline
     image:
-      status: False
-      code: None
+      status: True
+      code: shoreline
   rezervbase:
     ru: Резерв
     en: Reserve
     image:
-      status: False
-      code: None
+      status: True
+      code: reserve
   laboratory:
     ru: Лаборатория
     en: The Lab
     image:
-      status: False
-      code: None
+      status: True
+      code: lab
   tarkovstreets:
     ru: Улицы Таркова
     en: Streets of Tarkov
     image:
-      status: False
-      code: None
+      status: True
+      code: streets
   Sandbox:
     ru: Эпицентр
     en: Ground Zero

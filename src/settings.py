@@ -1,9 +1,11 @@
+import os
+
 import yaml
 from loguru import logger
 from yaml import SafeLoader
 
 from src.const import const
-from src.exceptions.service import exception_handler
+from src.schemas import SettingsSchemas
 
 
 class Settings:
@@ -14,7 +16,11 @@ class Settings:
         self.timer_mode: str | None = None
         self.profiler: str | None = None
         self.log_level: str | None = None
-        self.set_settings()
+        self.user_uid: str | None = None
+        self.loguru_log_file: str | None = None
+        self.loguru_diagnostic: bool | None = None
+        self.game_log_folder_path: str | None = None
+        self.game_output_log_path: str | None = None
 
     @property
     @logger.catch(reraise=True)
@@ -23,82 +29,111 @@ class Settings:
             data = yaml.load(settings_data, Loader=SafeLoader)
         return data
 
-    def __set_lang_settings(self, settings_data: dict) -> None:
-        logger.info('Starting set language settings!')
-        lang_settings = settings_data.get('language', None)
-        if not lang_settings:
-            exception_handler.empty_lang_level(setting_info=settings_data)
-        if lang_settings not in const.lang.allowed_langs:
-            exception_handler.restricted_lang_setting(restricted_lang=lang_settings)
+    def __set_lang_settings(self, settings_data: SettingsSchemas) -> None:
+        logger.info('Starting set language settings...')
+        lang_settings = settings_data.settings.language
         self.language = lang_settings
-        logger.info(f'The installation of the language settings is completed! -> {self.language}')
+        logger.debug(f'The installation of the language settings is completed -> {self.language}')
+        logger.info('The installation of the language settings is completed!')
 
-    def __set_presence_settings(self, settings_data: dict) -> None:
-        logger.info('Starting set presence settings!')
-        presence_settings: dict | None = settings_data.get('presence', None)
-        if not presence_settings:
-            exception_handler.empty_presence_level(setting_info=settings_data)
-        refresh_time: str | int | None = presence_settings.get('refresh_time', None)
-        if not refresh_time:
-            err = 'Error while set presence refresh timer, empty refresh timer'
-            exception_handler.raise_custom_exception(error_text=err, info=refresh_time)
-        self.refresh_timer = int(refresh_time)
-        timer_mode = presence_settings.get('timer_mode', None)
-        if timer_mode not in const.presence.allowed_timer_mode:
-            exception_handler.restricted_presence_timer_mode(restricted_timer=timer_mode)
+    def __set_presence_settings(self, settings_data: SettingsSchemas) -> None:
+        logger.info('Starting set presence settings...')
+        presence_settings = settings_data.settings.presence
+        refresh_time = presence_settings.refresh_time
+        timer_mode = presence_settings.timer_mode
+        self.refresh_timer = refresh_time
         self.timer_mode = timer_mode
-        logger.info(f'The installation of the presence settings is completed! -> {presence_settings}')
+        logger.debug(f'The installation of the presence settings is completed -> {presence_settings.__dict__}')
+        logger.info('The installation of the presence settings is completed!')
 
-    def __set_application_settings(self, settings_data: dict) -> None:
-        logger.info('Starting set application settings!')
-        core_settings: dict | None = settings_data.get('core', None)
-        if not core_settings:
-            exception_handler.empty_application_core_level(setting_info=settings_data)
-        logger_level_settings: str | None = core_settings.get('logger_level', None)
-        if not logger_level_settings:
-            err = 'Error while set application log settings, empty log level'
-            exception_handler.raise_custom_exception(error_text=err, info=logger_level_settings)
-        if logger_level_settings not in const.application.allowed_loger_levels:
-            exception_handler.restricted_logger_level_mode(restricted_level=logger_level_settings)
-        self.set_logger(log_level=logger_level_settings)
-        self.log_level = logger_level_settings
-        profiler_settings: dict | None = core_settings.get('profiler', None)
-        if profiler_settings:
-            if type(profiler_settings) is bool:
-                self.profiler = profiler_settings
-        logger.info(f'The installation of the application settings is completed! -> {core_settings}')
+    def __set_application_settings(self, settings_data: SettingsSchemas) -> None:
+        logger.info('Starting set application settings...')
+        application_settings = settings_data.settings.core
+        game_log_path_settings = application_settings.log_folder_path
+        self.game_log_folder_path = game_log_path_settings
+        logger.debug(f'The installation of the application settings is completed -> {application_settings.__dict__}')
+        logger.info('The installation of the application settings is completed!')
 
-    @staticmethod
-    def set_logger(log_level: str) -> None:
-        logger.info('Starting set Loguru settings!')
-        logger.remove()
-        logger.add(
-            'eft-discord-rich-presence.log',
-            format="{time:DD-MM-YYYY at HH:mm:ss} | {level} | {message}",
-            level=log_level.upper(),
-        )
-        logger.info(f'The installation of the Loguru settings is completed! -> {log_level}')
+    def __set_output_log_path(self) -> None:
+        logger.info('Start searching for output logs...')
+        last_big_timestamp = None
+        last_dir_name = None
+        with os.scandir(self.game_log_folder_path) as it:
+            for directory in it:
+                if directory.is_dir():
+                    dir_name = directory.name
+                    creation_timestamp = directory.stat().st_ctime
+                    if not last_big_timestamp:
+                        last_big_timestamp = creation_timestamp
+                        last_dir_name = dir_name
+                    if creation_timestamp > last_big_timestamp:
+                        last_big_timestamp = creation_timestamp
+                        last_dir_name = dir_name
+        current_output_logs = os.listdir(f'{self.game_log_folder_path}/{last_dir_name}')
+        game_log = [i for i in current_output_logs if 'output' in i]
+        if len(game_log) == 0:
+            logger.error(f'No output logs found in {self.game_log_folder_path}/{last_dir_name} -> {game_log}')
+        self.game_output_log_path = f'{self.game_log_folder_path}/{last_dir_name}/{game_log[0]}'
+        logger.debug(f'EFT output log path -> {self.game_output_log_path}')
+        logger.info(f'EFT output log was found!')
 
-    def __validate_settings_levels(self) -> dict:
+    def __validate_settings_levels(self) -> SettingsSchemas:
         data = self.__get_setting_data
-        logger.info(f'Yml settings data: {data}')
-        settings_data: dict | None = data.get('settings', None)
-        if not settings_data:
-            exception_handler.empty_core_settings_level(setting_info=settings_data)
-        presence_settings: dict | None = settings_data.get('presence', None)
-        if not presence_settings:
-            exception_handler.empty_presence_level(setting_info=settings_data)
-        core_settings: dict | None = settings_data.get('core', None)
-        if not core_settings:
-            exception_handler.empty_application_core_level(setting_info=settings_data)
-        return settings_data
+        logger.debug(f'Yml settings data: {data}')
+        validated_settings = SettingsSchemas(**data)
+        return validated_settings
+
+    def set_logger(self) -> None:
+        try:
+            with open('logger.yml', encoding='utf-8') as settings_data:
+                data = yaml.load(settings_data, Loader=SafeLoader)['logger']
+            self.log_level = data.get('level', 'DEBUG').upper()
+            self.loguru_log_file = data.get('file', 'eft-discord-rich-presence.log')
+            self.loguru_diagnostic = data.get('diagnostic', False)
+        except FileNotFoundError:
+            self.log_level = 'DEBUG'
+            self.loguru_log_file = 'eft-discord-rich-presence.log'
+            self.loguru_diagnostic = True
+        finally:
+            logger.add(
+                self.loguru_log_file,
+                format="{time:DD-MM-YYYY at HH:mm:ss} | {level} | {message}",
+                level=self.log_level,
+                diagnose=self.loguru_diagnostic,
+            )
+
+    @logger.catch
+    def __build_level_range(self) -> None:
+        logger.info('Building level range...')
+        level_range = const.levels.range
+        for key, value in level_range.items():
+            second_level_index = key + 1
+            second_level = level_range.get(second_level_index, None)
+            if not second_level:
+                break
+            actual_level_exp_req = value['full_exp']
+            second_level_exp_range = second_level['last_exp']
+            second_level_exp_req = actual_level_exp_req + second_level_exp_range
+            const.levels.range[second_level_index]['full_exp'] = second_level_exp_req
+        logger.debug(f'Levels range -> {const.levels.range}')
+        logger.info('Levels range built!')
 
     @logger.catch(reraise=True)
     def set_settings(self) -> None:
+        logger.info('Start installing settings...')
         validated_settings_data = self.__validate_settings_levels()
         self.__set_application_settings(settings_data=validated_settings_data)
         self.__set_presence_settings(settings_data=validated_settings_data)
         self.__set_lang_settings(settings_data=validated_settings_data)
+        self.__set_output_log_path()
+        self.__build_level_range()
+        logger.info('Finished installing settings.')
+
+    def store_user_id(self, user_id: str) -> None:
+        logger.info('Storing user uid!')
+        self.user_uid = user_id
+        logger.info(f'The user uid is stored successfully!')
+        logger.debug(f'The user uid is stored -> {self.user_uid}')
 
 
 settings = Settings()

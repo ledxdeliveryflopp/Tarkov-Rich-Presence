@@ -1,0 +1,4 @@
+logger:
+  level: DEBUG
+  file: test.log
+  diagnostic: True
