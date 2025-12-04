@@ -12,3 +12,4 @@ class ProfileInfo(BaseModel):
 class ProfileSchemas(BaseModel):
 
     info: ProfileInfo
+    updated: float | int

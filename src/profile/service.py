@@ -1,4 +1,5 @@
 import bisect
+from datetime import datetime
 
 import httpx
 from loguru import logger
@@ -13,14 +14,8 @@ class ProfileGrabber:
     def __init__(self):
         ...
 
-    # TODO: Вынести URL
-    @logger.catch
-    def grab_user_profile(self) -> ProfileSchemas | None:
-        logger.info('Getting user profile info...')
-        logger.debug(f'Getting user profile info for user -> {settings.user_uid}')
-        if not settings.user_uid:
-            logger.warning(f'No stored user uid found, skipping grab profile info!')
-            return None
+    @staticmethod
+    def __get_user_info() -> None or dict:
         url = f'https://players.tarkov.dev/profile/{settings.user_uid}.json'
         response = httpx.get(url=url)
         if response.status_code != httpx.codes.OK:
@@ -29,7 +24,18 @@ class ProfileGrabber:
             logger.debug(f'Response text -> {response.text}')
             logger.debug(f'Response json -> {response.json()}')
             return None
-        response_data = response.json()
+        response_data: dict = response.json()
+        return response_data
+
+    # TODO: Вынести URL
+    @logger.catch
+    def grab_user_profile(self) -> ProfileSchemas | None:
+        logger.info('Getting user profile info...')
+        logger.debug(f'Getting user profile info for user -> {settings.user_uid}')
+        if not settings.user_uid:
+            logger.warning(f'No stored user uid found, skipping grab profile info!')
+            return None
+        response_data = self.__get_user_info()
         validated_data = self.__validated_user_info(response_data=response_data)
         if not validated_data:
             logger.warning('User info validation failed!')
@@ -51,9 +57,21 @@ class ProfileGrabber:
         return closest_key
 
     @logger.catch
+    def __check_update_time(self, update_time: float) -> None:
+        logger.info('Start checking user update time...')
+        current_datetime = datetime.now()
+        two_days_in_timestamp = 172800
+        compare_timestamp = (current_datetime.timestamp() - two_days_in_timestamp) * 1000
+        if update_time < compare_timestamp:
+            logger.warning('User information is 2+ days out of date!')
+            logger.debug(f'User update time -> {update_time}, current timestamp -> {compare_timestamp}')
+        logger.info('User update time check successful, update time less 2 day!')
+
+    @logger.catch
     def __validated_user_info(self, response_data: dict) -> ProfileSchemas | None:
         logger.info('Validating user profile info...')
         user_info = ProfileSchemas(**response_data)
+        self.__check_update_time(update_time=user_info.updated)
         user_level = self.__convert_exp_to_lvl(exp=user_info.info.experience)
         user_info.info.experience = user_level
         logger.debug(f'User info -> {user_info}')
