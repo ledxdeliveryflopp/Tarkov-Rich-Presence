@@ -1,9 +1,9 @@
 settings:
-  language: ru
+  language: en
   presence:
     refresh_time: 8
     timer_mode: general # divided/general
-    show_zero_prestige: False
+    show_zero_prestige: True
   core:
     profiler: True
     log_folder_path: Logs

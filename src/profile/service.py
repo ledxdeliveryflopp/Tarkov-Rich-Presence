@@ -42,7 +42,7 @@ class ProfileGrabber:
     def __convert_exp_to_lvl(self, exp: float) -> int:
         logger.info('Start converting exp to lvl...')
         logger.debug(f'Start converting exp -> {exp}')
-        last_exp_values = [(entry['last_exp'], key) for key, entry in const.levels.range.items()]
+        last_exp_values = [(entry['full_exp'], key) for key, entry in const.levels.range.items()]
         last_exp_values.sort()
         index = bisect.bisect_right(last_exp_values, (exp, float('inf')))
         closest_key = last_exp_values[index - 1][1] if index > 0 else None

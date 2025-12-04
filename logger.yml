@@ -1,4 +1,4 @@
 logger:
   level: DEBUG
-  file: eft-discord-rich-presence.log
+  file: eft-discord-rich-presence-{time}.log
   diagnostic: True
