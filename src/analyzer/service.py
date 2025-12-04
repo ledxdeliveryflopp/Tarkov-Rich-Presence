@@ -117,7 +117,7 @@ class LogAnalyzer:
         server_ip = raid_info[3].split(' ')[2]
         server_port = raid_info[4].split(' ')[2]
         self.last_game_server = f'{server_ip}:{server_port}'
-        tech_location = raid_info[5].split(' ')[2]
+        tech_location = raid_info[5].split(' ')[2].lower()
         if settings.log_level.upper() == 'DEBUG':
             profile_uid = profile_uid_data[len(profile_uid_data) - 1]
             raid_mode = raid_info[2].split(' ')[2]
@@ -155,6 +155,7 @@ class LogAnalyzer:
             logger.info('Empty last game log or last game server')
             return False
 
+    # TODO: нужен более надежный способ
     @logger.catch
     def update_group_count(self) -> None:
         logger.info('Start searching lobby info...')
@@ -162,12 +163,12 @@ class LogAnalyzer:
         with open(settings.game_output_log_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
             for index, line in enumerate(lines):
-                if 'Nickname' in line and not 'SavageNickname' in line:
-                    with_no_space = line.replace(' ', '')
-                    with_no_test = with_no_space.replace('\n', '')
-                    user_nickname = with_no_test.split(':')[1].replace(',', '').replace('"', '')
+                if 'Got notification | GroupMatchRaidReady' in line:
+                    user_nickname = lines[index + 8].strip()
+                    fixed = user_nickname.split(' ')[1].replace(',', '').replace('"', '')
                     logger.debug(f'User join to lobby found! -> {line}, line index -> {index + 1}')
-                    check_result = self.check_user_for_leave(user=user_nickname, connect_user_line=index)
+                    check_result = self.check_user_for_leave(user=fixed, connect_user_line=index)
+                    logger.debug(f'Check result -> {check_result}')
                     if check_result is False:
                         lobby_results.add(user_nickname)
         logger.debug(f'Users in lobby(log) -> {lobby_results}')
@@ -194,8 +195,7 @@ class LogAnalyzer:
                         logger.debug(f'Leaved user -> {leaved_user}')
                         logger.info('Ignored user was found!')
                         return True
-                    elif leaved_user != user or username_index < connect_user_line:
-                        continue
+        return False
 
 
 log_analyzer = LogAnalyzer()

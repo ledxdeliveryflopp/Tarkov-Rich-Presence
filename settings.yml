@@ -5,4 +5,4 @@ settings:
     timer_mode: general # divided/general
   core:
     profiler: True
-    log_folder_path: Logs
+    log_folder_path: ../Logs

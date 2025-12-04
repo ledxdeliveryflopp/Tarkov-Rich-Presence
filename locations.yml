@@ -23,7 +23,7 @@ locations:
     image:
       status: True
       code: woods
-  Labyrinth:
+  labyrinth:
     ru: Лабиринт
     en: The Labyrinth
     image:
@@ -65,19 +65,19 @@ locations:
     image:
       status: True
       code: streets
-  Sandbox:
+  sandbox:
     ru: Эпицентр
     en: Ground Zero
     image:
       status: True
       code: sandbox
-  Sandbox_start:
+  sandbox_start:
     ru: Эпицентр(Новички)
     en: Ground Zero(Beginners)
     image:
       status: True
       code: sandbox
-  Sandbox_high:
+  sandbox_high:
     ru: Эпицентр(Опытные)
     en: Ground Zero(Experienced)
     image:

@@ -1,4 +1,4 @@
 logger:
   level: DEBUG
-  file: test.log
+  file: eft-discord-rich-presence.log
   diagnostic: True
