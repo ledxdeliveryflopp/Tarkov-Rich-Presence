@@ -16,55 +16,39 @@ class EftPresenceService(Presence):
         self.connect()
 
     @logger.catch
-    def __build_raid_presence_info(self, raid_location: str, location_image: str) -> ...:
+    def __build_presence_info(
+            self,
+            game_state: Literal['raid', 'lobby'],
+            raid_location: Optional[str] = None,
+            location_image: Optional[str] = None,
+    ) -> dict:
         profile_info = http_grabber.grab_user_profile()
-        state = const.presence.in_raid_state[settings.language]
+        if game_state == 'raid':
+            presence_state = f'{const.presence.in_raid_state[settings.language]} {raid_location}'
+            presence_details = f'{presence_state}'
+        else:
+            presence_state = const.presence.in_lobby_state[settings.language]
+            presence_details = const.presence.in_lobby[settings.language]
         faction = None
         if profile_info:
             username = profile_info.info.nickname
             level = profile_info.info.experience
-            prestige = profile_info.info.prestige_level
             faction = profile_info.info.side.lower()
-            presence_details = f'{state} {username}({level} lvl)({prestige} prestige)'
-        if not profile_info:
-            presence_details = const.presence.in_raid[settings.language]
-        presence_state = f'{state} {raid_location}'
+            prestige = profile_info.info.prestige_level
+            first_details = f'{username}, {level} {const.presence.level_details[settings.language]}'
+            if settings.show_zero_prestige is True or prestige > 0:
+                second_details = f'{prestige} {const.presence.prestige_details[settings.language]}'
+                presence_details = f'{first_details}, {second_details}'
+            else:
+                presence_details = first_details
         logger.debug(f'Presence details -> {presence_details}')
         logger.debug(f'Presence state -> {presence_state}')
         info = {
             'state': presence_state,
             'details': presence_details,
-            'large_image': location_image,
+            'large_image': location_image or 'Empty',
             'small_image': faction or 'Empty',
-            'large_text': raid_location,
-            'small_text': faction or 'Empty',
-        }
-        logger.debug(f'Presence info -> {info}')
-        return info
-
-    @logger.catch
-    def __build_lobby_presence_info(self) -> ...:
-        profile_info = http_grabber.grab_user_profile()
-        presence_details = None
-        faction = None
-        state = const.presence.in_lobby[settings.language]
-        if profile_info:
-            username = profile_info.info.nickname
-            level = profile_info.info.experience
-            prestige = profile_info.info.prestige_level
-            faction = profile_info.info.side.lower()
-            presence_details = f'{state} {username}({level} lvl)({prestige} prestige)'
-        if not profile_info:
-            presence_details = state
-        presence_state = const.presence.in_lobby_state[settings.language]
-        logger.debug(f'Presence details -> {presence_details}')
-        logger.debug(f'Presence state -> {presence_state}')
-        info = {
-            'state': presence_state,
-            'details': presence_details,
-            'large_image': 'Empty',
-            'small_image': faction or 'Empty',
-            'large_text': 'Empty',
+            'large_text': raid_location if raid_location else 'Empty',
             'small_text': faction or 'Empty',
         }
         logger.debug(f'Presence info -> {info}')
@@ -80,11 +64,11 @@ class EftPresenceService(Presence):
         logger.info(f'Setting {game_state} presence...')
         logger.debug(f'Game state -> {game_state}')
         if game_state == 'raid':
-            presence_info = self.__build_raid_presence_info(
-                raid_location=raid_location, location_image=location_image,
+            presence_info = self.__build_presence_info(
+                raid_location=raid_location, location_image=location_image, game_state='raid',
             )
-        elif game_state == 'lobby':
-            presence_info = self.__build_lobby_presence_info()
+        else:
+            presence_info = self.__build_presence_info(game_state='lobby')
         state = presence_info['state']
         details = presence_info['details']
         large_image = presence_info['large_image']
@@ -108,11 +92,8 @@ class EftPresenceService(Presence):
     def set_presence(self):
         logger.info('---------------SET PRESENCE---------------')
         raid_location, location_image = log_analyzer.get_last_raid_location()
-        if not raid_location:
-            self.__set_presence(game_state='lobby')
-            return
         raid_finish = log_analyzer.get_disconnect_message()
-        if raid_finish is True:
+        if not raid_location or raid_finish is True:
             self.__set_presence(game_state='lobby')
         else:
             self.__set_presence(
