@@ -1,10 +1,11 @@
-from typing import Literal
+import time
+from typing import Literal, Any
 
-import yaml
 from loguru import logger
-from yaml import SafeLoader
 
+from src.analyzer.utils import analyzer_utils
 from src.settings import settings
+from src.storage import storage
 
 
 class LogAnalyzer:
@@ -17,64 +18,37 @@ class LogAnalyzer:
         self.game_ignores_indexes: set = set()
         self.disconnect_ignores_indexes: set = set()
         self.last_game_log_finish_index: int | None = None
+        self.log_file_data: Any = None
+        self.last_game_uid = None
 
-    # TODO: сохранять локи в dict в код
-    @staticmethod
     @logger.catch
-    def __get_location_name(location_tech_name: str, lang: Literal['ru', 'en']) -> str:
-        logger.debug(f'Get location -> {location_tech_name}, lang -> {lang}')
-        logger.info('Get location name...')
-        with open('locations.yml', encoding='utf-8') as locations_data:
-            data = yaml.load(locations_data, Loader=SafeLoader)
-            formated_name = location_tech_name.replace(' ', '')
-            location_block = data['locations'].get(formated_name, None)
-            if not location_block:
-                logger.debug(f'Location -> {location_tech_name} not found!')
-                logger.info('Location not found!')
-                return 'Unknown location'
-            location = location_block[lang]
-            logger.debug(f'Location -> {location} found!')
-            logger.info('Location was found!')
-            return location
+    def __open_log_file(self):
+        logger.debug('Open log file...')
+        try:
+            logger.debug('Open file with cp1251 encoding')
+            with open(settings.game_output_log_path, 'r', encoding='cp1251') as file:
+                self.log_file_data = file.readlines()
+                logger.debug('File successfully opened')
+        except UnicodeDecodeError:
+            logger.warning('UnicodeDecodeError while open log file with cp1251 encoding!')
+            logger.debug('Open file with utf-8 encoding')
+            with open(settings.game_output_log_path, 'r', encoding='utf-8', errors='replace') as file:
+                self.log_file_data = file.readlines()
+                logger.debug('File successfully opened')
 
-    @staticmethod
-    @logger.catch
-    def __get_location_image(location_tech_name: str) -> str:
-        logger.debug(f'Get location image -> {location_tech_name}...')
-        logger.info('Get location image...')
-        with open('locations.yml', encoding='utf-8') as locations_data:
-            data = yaml.load(locations_data, Loader=SafeLoader)
-            location_block = data['locations'].get(location_tech_name, None)
-            if not location_block:
-                logger.debug(f'Location image -> {location_tech_name} not found!')
-                logger.info('Location image not found!')
-                return 'Unknown location'
-            location_image_status = location_block['image']['status']
-            logger.debug(f'Location image status -> {location_image_status}')
-            if location_image_status is False:
-                logger.info('Location image not found!')
-                return 'Unknown location'
-            location_image = location_block['image']['code']
-            logger.debug(f'Location image -> {location_image}')
-            logger.info('Location image was found!')
-            return location_image
-
-    # TODO: во всех функциях где есть current_output_logs, передавать его данные между всеми функциями в каждой
-    #  итерации(а не открывать его много раз в 1 итерацию)
     @logger.catch
     def get_user_id(self):
+        self.__open_log_file()
         logger.info('Get user uid...')
-        with open(settings.game_output_log_path, 'r') as file:
-            lines = file.readlines()
-            for index, line in enumerate(lines):
-                if 'application|SelectProfile' in line:
-                    logger.debug(f'Select profile info -> {line}, index -> {index}')
-                    user_uid = line.split(':')[-1].strip()
-                    logger.debug(f'Select profile uid -> {user_uid}')
-                    logger.info(f'User profile uid found!')
-                    settings.store_user_id(user_id=user_uid)
-                    return
-            logger.info(f'User profile uid dont found!')
+        lines = self.log_file_data
+        for index, line in enumerate(lines):
+            if 'application|SelectProfile' in line:
+                logger.debug(f'Select profile info -> {line}, index -> {index}')
+                user_uid = line.split(':')[-1].strip()
+                logger.debug(f'Select profile uid -> {user_uid}')
+                logger.info(f'User profile uid found!')
+                settings.store_user_id(user_id=user_uid)
+        logger.info(f'User profile uid dont found!')
 
     @staticmethod
     def __debug_raid_log(
@@ -96,29 +70,90 @@ class LogAnalyzer:
         logger.debug(f'Short Game ID -> {short_game_id}')
         logger.debug('---------------------------RAID DEBUG INFO END---------------------------')
 
-    # TODO: Трайнуть читать лог с конца для скорости(меньше озу еще жрать будет) + читать лог с конца для проверки на
-    #  выход из рейда(сравнивать мб в другую сторону)
     @logger.catch
-    def get_last_raid_location(self) -> (str, str) or None:
-        logger.info('Start searching for last raid info...')
-        last_info = None
-        with open(settings.game_output_log_path, 'r') as file:
-            lines = file.readlines()
-            for index, line in enumerate(lines):
-                if 'TRACE-NetworkGameCreate profileStatus' in line:
-                    last_info = line
-                    self.last_game_log_index = index
-        if not last_info:
-            logger.info('Last raid info not found!')
-            return None, None
-        logger.debug(f'Last raid info found -> {last_info}, line index -> {index + 1}')
-        raid_info = last_info.split(',')
+    def __build_pvp_info(self, raid_info: list) -> (str, str):
         profile_uid_data = raid_info[0].split(' ')
         server_ip = raid_info[3].split(' ')[2]
         server_port = raid_info[4].split(' ')[2]
         self.last_game_server = f'{server_ip}:{server_port}'
         tech_location = raid_info[5].split(' ')[2].lower()
-        if settings.log_level.upper() == 'DEBUG':
+        return profile_uid_data, tech_location
+
+    @logger.catch
+    def __build_pve_info(self, raid_info: list) -> (str, str):
+        tech_location = raid_info[3].split(':')[1].split(' ')[0].lower()
+        raid_uid = raid_info[1].split(':')[1]
+        return tech_location, raid_uid
+
+    def get_pve_info(self, lines: list[str]):
+        last_pve_index = 0
+        last_pvp_index = 0
+        last_pvp_info = None
+        last_pve_info = None
+        for index, line in enumerate(lines):
+            if '[Transit] Flag:Common' in line:
+                last_pve_info = line
+                last_pve_index = index
+            elif 'TRACE-NetworkGameCreate profileStatus' in line:
+                last_pvp_info = line
+                last_pvp_index = index
+        logger.debug(f'Last pve info -> {last_pve_info}')
+        logger.debug(f'Last pvp info -> {last_pvp_info}')
+        logger.debug(f'Last pve index -> {last_pve_index}')
+        logger.debug(f'Last pvp index -> {last_pvp_index}')
+        if last_pve_index > last_pvp_index:
+            self.last_game_log_index = last_pve_index
+            logger.debug(f'last pve index > last pvp index')
+            return last_pve_info
+        else:
+            logger.debug(f'last pve index < last pvp index')
+            self.last_game_log_index = last_pvp_index
+            return last_pvp_info
+
+    def get_pvp_info(self, lines: list[str]):
+        last_info = None
+        for index, line in enumerate(lines):
+            if 'TRACE-NetworkGameCreate profileStatus' in line:
+                last_info = line
+                self.last_game_log_index = index
+        return last_info
+
+    # TODO: Трайнуть читать лог с конца для скорости(меньше озу еще жрать будет) + читать лог с конца для проверки на
+    #  выход из рейда(сравнивать мб в другую сторону)
+    @logger.catch
+    def get_last_raid_location(self) -> (str, str) or None:
+        self.__open_log_file()
+        self.__get_game_mode()
+        logger.info('Start searching for last raid info...')
+        last_info = None
+        lines = self.log_file_data
+        if settings.game_mode == 'pve':
+            last_info = self.get_pve_info(lines=lines)
+        elif settings.game_mode == 'regular':
+            last_info = self.get_pvp_info(lines=lines)
+        if not last_info:
+            logger.info('Last raid info not found!')
+            return None, None
+        logger.debug(f'Last raid info found -> {last_info}, line index -> {self.last_game_log_index + 1}')
+        raid_info = last_info.split(',')
+        if settings.game_mode == 'regular':
+            profile_uid_data, tech_location = self.__build_pvp_info(raid_info=raid_info)
+        elif settings.game_mode == 'pve':
+            tech_location, raid_uid = self.__build_pve_info(raid_info=raid_info)
+            if not tech_location or not raid_uid:
+                profile_uid_data, tech_location = self.__build_pvp_info(raid_info=raid_info)
+            if not self.last_game_uid and raid_uid:
+                logger.debug(f'Save raid id -> {raid_uid}')
+                self.last_game_uid = raid_uid
+            elif self.last_game_uid and raid_uid != self.last_game_uid:
+                logger.debug('This raid have another id!')
+                logger.debug(f'Actual Game id -> {raid_uid}, last game id -> {self.last_game_uid}')
+                storage.start_raid_time = time.time()
+                self.last_game_uid = raid_uid
+                logger.debug(f'Set new presence time -> {storage.start_raid_time}')
+        else:
+            return None, None
+        if settings.log_level.upper() == 'DEBUG' and settings.game_mode == 'pvp':
             profile_uid = profile_uid_data[len(profile_uid_data) - 1]
             raid_mode = raid_info[2].split(' ')[2]
             server_sid = raid_info[6].split(' ')[2]
@@ -134,23 +169,32 @@ class LogAnalyzer:
                 short_game_id=short_game_id,
             )
         logger.info(f'Last raid info found!')
-        location = self.__get_location_name(location_tech_name=tech_location, lang=settings.language)
-        location_image = self.__get_location_image(location_tech_name=tech_location)
+        location = analyzer_utils.get_location_name(location_tech_name=tech_location, lang=settings.language)
+        location_image = analyzer_utils.get_location_image(location_tech_name=tech_location)
         return location, location_image
+
+    def __get_game_mode(self) -> None:
+        logger.info('Get game mode...')
+        lines = self.log_file_data
+        for index, line in enumerate(lines):
+            if 'application|Session mode:' in line:
+                session_info = line.split(':')[-1].strip().lower()
+                settings.game_mode = session_info
+                # logger.debug(f'Game mode info -> {line}, line index -> {index + 1}')
+        logger.debug(f'Game mode -> {settings.game_mode}')
 
     @logger.catch
     def get_disconnect_message(self) -> bool:
         logger.info('Start searching for disconnect message...')
         if self.last_game_log_index and self.last_game_server:
-            with open(settings.game_output_log_path, 'r') as file:
-                lines = file.readlines()
-                for index, line in enumerate(lines):
-                    if f'Disconnect (address: {self.last_game_server})' in line and self.last_game_log_index < index:
-                        logger.debug(f'Last raid disconnect info found! -> {line}, line index -> {index + 1}')
-                        logger.info('Last raid disconnect info found!')
-                        return True
-                logger.info('Last raid disconnect info was not found!')
-                return False
+            lines = self.log_file_data
+            for index, line in enumerate(lines):
+                if f'Disconnect (address: {self.last_game_server})' in line and self.last_game_log_index < index:
+                    logger.debug(f'Last raid disconnect info found! -> {line}, line index -> {index + 1}')
+                    logger.info('Last raid disconnect info found!')
+                    return True
+            logger.info('Last raid disconnect info was not found!')
+            return False
         else:
             logger.info('Empty last game log or last game server')
             return False
@@ -160,17 +204,16 @@ class LogAnalyzer:
     def update_group_count(self) -> None:
         logger.info('Start searching lobby info...')
         lobby_results = set()
-        with open(settings.game_output_log_path, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
-            for index, line in enumerate(lines):
-                if 'Got notification | GroupMatchRaidReady' in line:
-                    user_nickname = lines[index + 8].strip()
-                    fixed = user_nickname.split(' ')[1].replace(',', '').replace('"', '')
-                    logger.debug(f'User join to lobby found! -> {line}, line index -> {index + 1}')
-                    check_result = self.check_user_for_leave(user=fixed, connect_user_line=index)
-                    logger.debug(f'Check result -> {check_result}')
-                    if check_result is False:
-                        lobby_results.add(user_nickname)
+        lines = self.log_file_data
+        for index, line in enumerate(lines):
+            if 'Got notification | GroupMatchRaidReady' in line:
+                user_nickname = lines[index + 8].strip()
+                fixed = user_nickname.split(' ')[1].replace(',', '').replace('"', '')
+                logger.debug(f'User join to lobby found! -> {line}, line index -> {index + 1}')
+                check_result = self.check_user_for_leave(user=fixed, connect_user_line=index)
+                logger.debug(f'Check result -> {check_result}')
+                if check_result is False:
+                    lobby_results.add(user_nickname)
         logger.debug(f'Users in lobby(log) -> {lobby_results}')
         logger.debug(f'Stored lobby players -> {self.current_player_name}')
         user_len = len(lobby_results)
@@ -182,19 +225,18 @@ class LogAnalyzer:
     @logger.catch
     def check_user_for_leave(self, user: str, connect_user_line: int) -> bool:
         logger.info('Start searching lobby info for leaved users...')
-        with open(settings.game_output_log_path, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
-            for index, line in enumerate(lines):
-                if '"type": "groupMatchUserLeave"' in line:
-                    username_index = index + 3
-                    leaved_user = lines[username_index].strip().split(' ')[1].replace('"', '')
-                    logger.debug(f'Check user leave -> {user}, index -> {connect_user_line}')
-                    logger.debug(f'Finded user leave -> {leaved_user}, index -> {username_index}')
-                    if leaved_user == user and username_index >= connect_user_line:
-                        logger.debug(f'Group match user leave found! -> {line}, line index -> {username_index}')
-                        logger.debug(f'Leaved user -> {leaved_user}')
-                        logger.info('Ignored user was found!')
-                        return True
+        lines = self.log_file_data
+        for index, line in enumerate(lines):
+            if '"type": "groupMatchUserLeave"' in line:
+                username_index = index + 3
+                leaved_user = lines[username_index].strip().split(' ')[1].replace('"', '')
+                logger.debug(f'Check user leave -> {user}, index -> {connect_user_line}')
+                logger.debug(f'Finded user leave -> {leaved_user}, index -> {username_index}')
+                if leaved_user == user and username_index >= connect_user_line:
+                    logger.debug(f'Group match user leave found! -> {line}, line index -> {username_index}')
+                    logger.debug(f'Leaved user -> {leaved_user}')
+                    logger.info('Ignored user was found!')
+                    return True
         return False
 
 

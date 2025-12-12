@@ -7,6 +7,8 @@ class CoreLevel(BaseModel):
 
     profiler: bool
     log_folder_path: str
+    deque_search: bool
+    deque_max_depth: int
 
 
 class PresenceLevel(BaseModel):

@@ -66,7 +66,7 @@ class PresenceConst:
 
     level_details: dict = {'ru': 'Уровень', 'en': 'Level'}
     prestige_details: dict = {'ru': 'Престиж', 'en': 'Prestige'}
-    in_raid_state: dict = {'ru': 'В рейде: ', 'en': 'In raid: '}
+    in_raid_state: dict = {'ru': 'В рейде', 'en': 'In raid'}
     location: dict = {'ru': 'Локация: ', 'en': 'Location: '}
 
     in_lobby: dict = {'ru': 'В схроне', 'en': 'In lobby'}

@@ -1,9 +1,11 @@
 settings:
-  language: en
+  language: ru
   presence:
     refresh_time: 8
     timer_mode: general # divided/general
-    show_zero_prestige: True
+    show_zero_prestige: False
   core:
-    profiler: True
-    log_folder_path: Logs
+    profiler: False
+    log_folder_path: bugs
+    deque_search: True
+    deque_max_depth: 1_000_000

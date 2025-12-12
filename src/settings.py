@@ -14,6 +14,7 @@ class Settings:
         self.language: str | None = None
         self.refresh_timer: int | None = None
         self.show_zero_prestige: bool | None = None
+        self.game_mode: str | None = None
         self.timer_mode: str | None = None
         self.profiler: str | None = None
         self.log_level: str | None = None
@@ -22,6 +23,9 @@ class Settings:
         self.loguru_diagnostic: bool | None = None
         self.game_log_folder_path: str | None = None
         self.game_output_log_path: str | None = None
+        self.locations_data: dict | None = None
+        self.deque_search: bool | None = None
+        self.deque_max_depth: int | None = None
 
     @property
     @logger.catch(reraise=True)
@@ -29,6 +33,15 @@ class Settings:
         with open('settings.yml', encoding='utf-8') as settings_data:
             data = yaml.load(settings_data, Loader=SafeLoader)
         return data
+
+    @logger.catch
+    def __set_locations_data(self) -> None:
+        logger.info('Starting to load locations data!')
+        with open('locations.yml', encoding='utf-8') as locations_data:
+            data = yaml.load(locations_data, Loader=SafeLoader)
+            self.locations_data = data
+            logger.debug(f'Locations info -> {self.locations_data}')
+        logger.info('Finished loading locations data!')
 
     def __set_lang_settings(self, settings_data: SettingsSchemas) -> None:
         logger.info('Starting set language settings...')
@@ -54,6 +67,8 @@ class Settings:
         application_settings = settings_data.settings.core
         game_log_path_settings = application_settings.log_folder_path
         self.game_log_folder_path = game_log_path_settings
+        self.deque_search = application_settings.deque_search
+        self.deque_max_depth = application_settings.deque_max_depth
         logger.debug(f'The installation of the application settings is completed -> {application_settings.__dict__}')
         logger.info('The installation of the application settings is completed!')
 
@@ -130,6 +145,7 @@ class Settings:
         self.__set_lang_settings(settings_data=validated_settings_data)
         self.__set_output_log_path()
         self.__build_level_range()
+        self.__set_locations_data()
         logger.info('Finished installing settings.')
 
     def store_user_id(self, user_id: str) -> None:

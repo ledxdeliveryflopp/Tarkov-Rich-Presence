@@ -165,3 +165,9 @@ eft-discord-rich-presence.log
 # Debug
 Logs/
 leave_group.txt
+PVE
+bugs
+chrome-win64
+build
+dist
+

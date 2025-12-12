@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -5,7 +7,7 @@ class ProfileInfo(BaseModel):
 
     nickname: str
     side: str
-    prestige_level: int = Field(alias='prestigeLevel')
+    prestige_level: Optional[int] = Field(None, alias='prestigeLevel')
     experience: int | float
 
 

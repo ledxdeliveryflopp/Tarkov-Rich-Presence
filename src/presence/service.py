@@ -1,3 +1,4 @@
+import time
 from typing import Optional, Literal
 
 from loguru import logger
@@ -7,6 +8,7 @@ from src.analyzer.service import log_analyzer
 from src.const import const
 from src.profile.service import http_grabber
 from src.settings import settings
+from src.storage import storage
 
 
 class EftPresenceService(Presence):
@@ -24,7 +26,7 @@ class EftPresenceService(Presence):
     ) -> dict:
         profile_info = http_grabber.grab_user_profile()
         if game_state == 'raid':
-            presence_state = f'{const.presence.in_raid_state[settings.language]} {raid_location}'
+            presence_state = f'{const.presence.in_raid_state[settings.language]}({settings.game_mode}): {raid_location}'
             presence_details = f'{presence_state}'
         else:
             presence_state = const.presence.in_lobby_state[settings.language]
@@ -85,6 +87,7 @@ class EftPresenceService(Presence):
             large_text=large_text,
             small_text=small_text,
             small_image=small_image,
+            start=storage.start_raid_time
         )
         logger.info(f'{game_state} presence set successfully!')
 
@@ -92,7 +95,10 @@ class EftPresenceService(Presence):
     def set_presence(self):
         logger.info('---------------SET PRESENCE---------------')
         raid_location, location_image = log_analyzer.get_last_raid_location()
-        raid_finish = log_analyzer.get_disconnect_message()
+        raid_finish = log_analyzer.get_disconnect_message() if settings.game_mode == 'regular' else False
+        print(settings.game_mode)
+        print(raid_finish)
+        print('TESTSETSETSET')
         if not raid_location or raid_finish is True:
             self.__set_presence(game_state='lobby')
         else:
