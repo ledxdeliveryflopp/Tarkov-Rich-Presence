@@ -10,7 +10,7 @@ class GitHubApi:
     def __init__(self):
         super().__init__()
         self.latest_release = f'{const.git.GITHUB_API}{const.git.GITHUB_OWNER}/{const.git.GITHUB_REPO}/releases/latest'
-        self.token = 'Bearer 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'
+        self.token = 'Bearer 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' # noqa
 
     @logger.catch
     def get_latest_release_version(self) -> str:
