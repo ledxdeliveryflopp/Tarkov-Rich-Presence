@@ -78,12 +78,20 @@ class LangConst:
     allowed_langs: set = {'ru', 'en'}
 
 
+class GitConst:
+
+    GITHUB_API: str = 'https://api.github.com/repos/'
+    GITHUB_OWNER: str = 'ledxdeliveryflopp'
+    GITHUB_REPO: str = 'Tarkov-Rich-Presence'
+
+
 class Const:
 
     application: CoreConst = CoreConst()
     presence: PresenceConst = PresenceConst()
     lang: LangConst = LangConst()
     levels: LevelsConst = LevelsConst()
+    git: GitConst = GitConst()
 
 
 const = Const()

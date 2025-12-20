@@ -113,6 +113,7 @@ class Settings:
             self.loguru_log_file = 'eft-discord-rich-presence.log'
             self.loguru_diagnostic = True
         finally:
+            logger.remove()
             logger.add(
                 self.loguru_log_file,
                 format="{time:DD-MM-YYYY at HH:mm:ss} | {level} | {message}",

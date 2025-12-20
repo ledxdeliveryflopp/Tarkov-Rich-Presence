@@ -19,6 +19,8 @@ dependencies = [
     "pydoll-python (>=2.12.4,<3.0.0)",
     "pyprof2calltree (>=1.4.5,<2.0.0)",
     "snakeviz (>=2.2.2,<3.0.0)",
+    "tqdm (>=4.67.1,<5.0.0)",
+    "py7zr (>=1.0.0,<2.0.0)",
 ]
 
 

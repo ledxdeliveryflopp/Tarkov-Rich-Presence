@@ -95,10 +95,7 @@ class EftPresenceService(Presence):
     def set_presence(self):
         logger.info('---------------SET PRESENCE---------------')
         raid_location, location_image = log_analyzer.get_last_raid_location()
-        raid_finish = log_analyzer.get_disconnect_message() if settings.game_mode == 'regular' else False
-        print(settings.game_mode)
-        print(raid_finish)
-        print('TESTSETSETSET')
+        raid_finish = log_analyzer.get_disconnect_message()
         if not raid_location or raid_finish is True:
             self.__set_presence(game_state='lobby')
         else:

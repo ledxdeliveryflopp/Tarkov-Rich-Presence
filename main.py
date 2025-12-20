@@ -4,6 +4,7 @@ import time
 from loguru import logger
 
 from src.analyzer.service import log_analyzer
+from src.github.version import version_checker
 from src.presence.service import presence_service
 from src.settings import settings
 
@@ -29,6 +30,7 @@ def start_profiler_loop():
 
 if __name__ == '__main__':
     settings.set_logger()
+    version_checker.check_version()
     settings.set_settings()
     if settings.profiler is True:
         start_profiler_loop()

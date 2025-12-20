@@ -8,7 +8,6 @@ from loguru import logger
 from src.analyzer.utils import analyzer_utils
 from src.settings import settings
 from src.storage import storage
-from src.utils import calculate_time
 
 
 class DequeService:
@@ -34,7 +33,6 @@ class DequeService:
     def get_user_id(self, debug: bool):
         logger.info('Get user uid...')
         line_count = 10
-        iter_count = 1
         while line_count < settings.deque_max_depth:
             lines = self.__open_log_file(line_count=line_count)
             for index, line in enumerate(lines):
@@ -44,12 +42,10 @@ class DequeService:
                     logger.debug(f'Select profile uid -> {user_uid}')
                     logger.info(f'User profile uid found!')
                     settings.store_user_id(user_id=user_uid)
-                    return iter_count
+                    return user_uid
             logger.debug(f'User uid not found with count -> {line_count}')
             line_count += 10
             logger.debug(f'Increasing line count to -> {line_count}')
-            if debug is True:
-                iter_count += 1
         logger.info(f'User profile uid dont found!')
 
     @logger.catch
@@ -78,7 +74,7 @@ class DequeService:
         logger.info('Get game mode...')
         line_count = 10
         while line_count < settings.deque_max_depth:
-            lines = self.open_slice_file(line_count=line_count)
+            lines = self.__open_log_file(line_count=line_count)
             for index, line in enumerate(lines):
                 if 'application|Session mode:' in line:
                     session_info = line.split(':')[-1].strip().lower()
