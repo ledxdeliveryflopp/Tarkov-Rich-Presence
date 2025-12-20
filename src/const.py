@@ -60,6 +60,11 @@ class CoreConst:
     allowed_loger_levels: set = {'DEBUG', 'INFO', 'WARNING', 'ERROR', 'TRACE'}
 
 
+class Process:
+
+    game_proc_name: str = 'EscapeFromTarkov.exe'
+
+
 class PresenceConst:
 
     allowed_timer_mode: set = {'general', 'divided'}
@@ -92,6 +97,7 @@ class Const:
     lang: LangConst = LangConst()
     levels: LevelsConst = LevelsConst()
     git: GitConst = GitConst()
+    proc: Process = Process()
 
 
 const = Const()

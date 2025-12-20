@@ -7,16 +7,23 @@ from src.analyzer.service import log_analyzer
 from src.github.version import version_checker
 from src.presence.service import presence_service
 from src.settings import settings
+from src.utils import find_eft_process
 
 
+@logger.catch
 def start_main_loop() -> None:
     while True:
-        if not settings.user_uid:
-            log_analyzer.get_user_id()
-        presence_service.set_presence()
-        time.sleep(settings.refresh_timer)
+        game_status = find_eft_process()
+        if game_status is True:
+            if not settings.user_uid:
+                log_analyzer.get_user_id()
+            presence_service.set_presence()
+            time.sleep(settings.refresh_timer)
+        else:
+            time.sleep(30)
 
 
+@logger.catch
 def start_profiler_loop():
     profiler = cProfile.Profile()
     profiler.enable()
