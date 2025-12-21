@@ -43,13 +43,14 @@ class VersionChecker(GitHubApi):
 
     def check_version(self) -> None:
         try:
-            print('Проверка версии приложения')
+            print('Проверка версии приложения...')
             latest_version = self.get_latest_release_version()
             compare_result = self.__compare_version(latest_version=latest_version)
             if compare_result is True:
                 print('Вышла новая версия!')
                 self.__open_installer()
             else:
+                print('Установлена актуальная версия')
                 pass
         except (httpx.ConnectTimeout, httpcore.ConnectTimeout) as exc:
             logger.error(exc)
