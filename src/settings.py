@@ -72,7 +72,8 @@ class Settings:
         logger.debug(f'The installation of the application settings is completed -> {application_settings.__dict__}')
         logger.info('The installation of the application settings is completed!')
 
-    def __set_output_log_path(self) -> None:
+    @logger.catch
+    def set_output_log_path(self) -> None:
         logger.info('Start searching for output logs...')
         last_big_timestamp = None
         last_dir_name = None
@@ -94,6 +95,9 @@ class Settings:
         self.game_output_log_path = f'{self.game_log_folder_path}/{last_dir_name}/{game_log[0]}'
         logger.debug(f'EFT output log path -> {self.game_output_log_path}')
         logger.info(f'EFT output log was found!')
+
+    def delete_saved_log_path(self) -> None:
+        self.game_output_log_path = None
 
     def __validate_settings_levels(self) -> SettingsSchemas:
         data = self.__get_setting_data
@@ -144,7 +148,6 @@ class Settings:
         self.__set_application_settings(settings_data=validated_settings_data)
         self.__set_presence_settings(settings_data=validated_settings_data)
         self.__set_lang_settings(settings_data=validated_settings_data)
-        self.__set_output_log_path()
         self.__build_level_range()
         self.__set_locations_data()
         logger.info('Finished installing settings.')
