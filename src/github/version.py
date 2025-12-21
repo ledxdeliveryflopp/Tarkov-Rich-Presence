@@ -2,6 +2,8 @@ import json
 import os
 import sys
 
+import httpcore
+import httpx
 from loguru import logger
 from packaging.version import Version
 
@@ -40,12 +42,18 @@ class VersionChecker(GitHubApi):
             self.__open_installer()
 
     def check_version(self) -> None:
-        latest_version = self.get_latest_release_version()
-        compare_result = self.__compare_version(latest_version=latest_version)
-        if compare_result is True:
-            print('Вышла новая версия!')
-            self.__open_installer()
-        else:
+        try:
+            print('Проверка версии приложения')
+            latest_version = self.get_latest_release_version()
+            compare_result = self.__compare_version(latest_version=latest_version)
+            if compare_result is True:
+                print('Вышла новая версия!')
+                self.__open_installer()
+            else:
+                pass
+        except (httpx.ConnectTimeout, httpcore.ConnectTimeout) as exc:
+            logger.error(exc)
+            print('Не удалось проверить версию приложения')
             pass
 
 
