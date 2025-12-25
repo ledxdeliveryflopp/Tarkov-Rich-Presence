@@ -83,10 +83,7 @@ class LogAnalyzer:
     def __build_pve_info(self, raid_info: list, info_type) -> (str, str):
         logger.info(f'Pve raid info type -> {info_type}')
         if info_type == 'pvp_type':
-            server_ip = raid_info[3].split(' ')[2]
-            server_port = raid_info[4].split(' ')[2]
-            self.last_game_server = f'{server_ip}:{server_port}'
-            tech_location = raid_info[5].split(' ')[2].lower()
+            tech_location = raid_info[3].split(':')[1].split(' ')[0].lower()
             raid_uid = raid_info[8].split(' ')[2].replace("'", '').lower()
             logger.info(f'Pve raid pvp info type uid -> {raid_uid}')
             logger.info(f'Pve raid pvp info type location -> {tech_location}')

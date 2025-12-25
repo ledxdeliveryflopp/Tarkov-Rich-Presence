@@ -5,6 +5,6 @@ settings:
     show_zero_prestige: False
   core:
     profiler: False
-    log_folder_path: ../logs
+    log_folder_path: bugs
     deque_search: False
     deque_max_depth: 1
