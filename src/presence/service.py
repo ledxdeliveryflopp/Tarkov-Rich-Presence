@@ -48,10 +48,10 @@ class EftPresenceService(Presence):
         info = {
             'state': presence_state,
             'details': presence_details,
-            'large_image': location_image or 'logo',
-            'small_image': faction or 'Empty',
+            'large_image': location_image if location_image != 'Unknown location' else 'logo',
+            'small_image': faction if faction else 'Empty',
             'large_text': raid_location if raid_location else 'Escape from Tarkov',
-            'small_text': faction or 'Empty',
+            'small_text': faction if faction else 'Empty',
         }
         logger.debug(f'Presence info -> {info}')
         return info

@@ -80,14 +80,26 @@ class LogAnalyzer:
         return profile_uid_data, tech_location
 
     @logger.catch
-    def __build_pve_info(self, raid_info: list) -> (str, str):
+    def __build_pve_info(self, raid_info: list, info_type) -> (str, str):
+        logger.info(f'Pve raid info type -> {info_type}')
+        if info_type == 'pvp_type':
+            server_ip = raid_info[3].split(' ')[2]
+            server_port = raid_info[4].split(' ')[2]
+            self.last_game_server = f'{server_ip}:{server_port}'
+            tech_location = raid_info[5].split(' ')[2].lower()
+            raid_uid = raid_info[8].split(' ')[2].replace("'", '').lower()
+            logger.info(f'Pve raid pvp info type uid -> {raid_uid}')
+            logger.info(f'Pve raid pvp info type location -> {tech_location}')
+            return tech_location, raid_uid
         splited_info = raid_info[3].split(':')[1].replace('\n', '').strip().split('->')
         locations = [s.strip() for s in splited_info if s.strip()]
         tech_location = locations[-1:][0].lower()
         raid_uid = raid_info[1].split(':')[1]
+        logger.info(f'Pve raid pve info uid -> {raid_uid}')
+        logger.info(f'Pve raid pve info location -> {tech_location}')
         return tech_location, raid_uid
 
-    def get_pve_info(self, lines: list[str]):
+    def get_pve_info(self, lines: list[str]) -> (str, str):
         last_pve_index = 0
         last_pvp_index = 0
         last_pvp_info = None
@@ -106,11 +118,11 @@ class LogAnalyzer:
         if last_pve_index > last_pvp_index:
             self.last_game_log_index = last_pve_index
             logger.debug(f'last pve index > last pvp index')
-            return last_pve_info
+            return last_pve_info, 'pve_type'
         else:
             logger.debug(f'last pve index < last pvp index')
             self.last_game_log_index = last_pvp_index
-            return last_pvp_info
+            return last_pvp_info, 'pvp_type'
 
     def get_pvp_info(self, lines: list[str]):
         last_info = None
@@ -130,7 +142,7 @@ class LogAnalyzer:
         last_info = None
         lines = self.log_file_data
         if settings.game_mode == 'pve':
-            last_info = self.get_pve_info(lines=lines)
+            last_info, info_type = self.get_pve_info(lines=lines)
         elif settings.game_mode == 'regular':
             last_info = self.get_pvp_info(lines=lines)
         if not last_info:
@@ -141,7 +153,7 @@ class LogAnalyzer:
         if settings.game_mode == 'regular':
             profile_uid_data, tech_location = self.__build_pvp_info(raid_info=raid_info)
         elif settings.game_mode == 'pve':
-            tech_location, raid_uid = self.__build_pve_info(raid_info=raid_info)
+            tech_location, raid_uid = self.__build_pve_info(raid_info=raid_info, info_type=info_type)
             if not tech_location or not raid_uid:
                 profile_uid_data, tech_location = self.__build_pvp_info(raid_info=raid_info)
             if not self.last_game_uid and raid_uid:
