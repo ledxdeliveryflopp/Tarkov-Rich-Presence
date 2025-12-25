@@ -1,6 +1,6 @@
 {
-    "tag": "0.1.7",
+    "tag": "0.2.0",
     "author": "ledxdeliveryflopp",
-    "installer_required": "0.1.0",
+    "installer_required": "1.1.0",
     "startup_support": true
 }

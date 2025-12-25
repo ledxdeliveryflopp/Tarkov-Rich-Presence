@@ -83,4 +83,9 @@ locations:
     image:
       status: True
       code: sandbox
-# Добавить заглушку для схрона(если нет udi юзера)
+  terminal:
+    ru: Терминал
+    en: Terminal
+    image:
+      status: True
+      code: terminal

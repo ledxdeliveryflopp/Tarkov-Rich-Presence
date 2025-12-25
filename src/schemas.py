@@ -13,7 +13,6 @@ class CoreLevel(BaseModel):
 
 class PresenceLevel(BaseModel):
     refresh_time: int
-    timer_mode: Literal['divided', 'general']
     show_zero_prestige: bool
 
 

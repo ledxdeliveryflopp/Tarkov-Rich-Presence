@@ -81,7 +81,9 @@ class LogAnalyzer:
 
     @logger.catch
     def __build_pve_info(self, raid_info: list) -> (str, str):
-        tech_location = raid_info[3].split(':')[1].split(' ')[0].lower()
+        splited_info = raid_info[3].split(':')[1].replace('\n', '').strip().split('->')
+        locations = [s.strip() for s in splited_info if s.strip()]
+        tech_location = locations[-1:][0].lower()
         raid_uid = raid_info[1].split(':')[1]
         return tech_location, raid_uid
 

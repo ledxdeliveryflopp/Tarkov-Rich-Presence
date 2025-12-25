@@ -48,9 +48,9 @@ class EftPresenceService(Presence):
         info = {
             'state': presence_state,
             'details': presence_details,
-            'large_image': location_image or 'Empty',
+            'large_image': location_image or 'logo',
             'small_image': faction or 'Empty',
-            'large_text': raid_location if raid_location else 'Empty',
+            'large_text': raid_location if raid_location else 'Escape from Tarkov',
             'small_text': faction or 'Empty',
         }
         logger.debug(f'Presence info -> {info}')
@@ -70,7 +70,10 @@ class EftPresenceService(Presence):
                 raid_location=raid_location, location_image=location_image, game_state='raid',
             )
         else:
-            presence_info = self.__build_presence_info(game_state='lobby')
+            location_image = 'logo'
+            presence_info = self.__build_presence_info(
+                game_state='lobby', location_image=location_image,
+            )
         state = presence_info['state']
         details = presence_info['details']
         large_image = presence_info['large_image']

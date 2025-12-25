@@ -15,7 +15,6 @@ class Settings:
         self.refresh_timer: int | None = None
         self.show_zero_prestige: bool | None = None
         self.game_mode: str | None = None
-        self.timer_mode: str | None = None
         self.profiler: str | None = None
         self.log_level: str | None = None
         self.user_uid: str | None = None
@@ -54,10 +53,8 @@ class Settings:
         logger.info('Starting set presence settings...')
         presence_settings = settings_data.settings.presence
         refresh_time = presence_settings.refresh_time
-        timer_mode = presence_settings.timer_mode
         zero_prestige = presence_settings.show_zero_prestige
         self.refresh_timer = refresh_time
-        self.timer_mode = timer_mode
         self.show_zero_prestige = zero_prestige
         logger.debug(f'The installation of the presence settings is completed -> {presence_settings.__dict__}')
         logger.info('The installation of the presence settings is completed!')
