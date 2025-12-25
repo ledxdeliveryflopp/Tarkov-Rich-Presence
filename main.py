@@ -1,4 +1,6 @@
 import cProfile
+import signal
+import sys
 import time
 
 from loguru import logger
@@ -8,6 +10,19 @@ from src.github.version import version_checker
 from src.presence.service import presence_service
 from src.settings import settings
 from src.utils import find_eft_process
+
+
+def create_signal_handler(c_profiler: cProfile.Profile):
+    def signal_handler(sig, frame):
+        print("Закрытие приложения...")
+        logger.debug('Signal handler')
+        logger.info(f'Handler settings -> {settings.__dict__}')
+        if settings.profiler is True:
+            c_profiler.disable()
+            c_profiler.dump_stats(f'all_functions{time.time()}.prof')
+            logger.debug('saving profiler dump')
+        sys.exit(0)
+    return signal_handler
 
 
 @logger.catch
@@ -27,22 +42,19 @@ def start_main_loop() -> None:
 
 
 @logger.catch
-def start_profiler_loop():
-    profiler = cProfile.Profile()
-    profiler.enable()
-    try:
-        start_main_loop()
-    except KeyboardInterrupt:
-        logger.debug('Keyboard Interrupt!')
-        profiler.disable()
-        profiler.dump_stats(f'all_functions{time.time()}.prof')
+def start_profiler_loop(c_profiler: cProfile.Profile):
+    c_profiler.enable()
+    start_main_loop()
 
 
 if __name__ == '__main__':
     settings.set_logger()
     version_checker.check_version()
     settings.set_settings()
+    profiler = cProfile.Profile()
+    handler = create_signal_handler(c_profiler=profiler)
+    signal.signal(signal.SIGINT, handler)
     if settings.profiler is True:
-        start_profiler_loop()
+        start_profiler_loop(c_profiler=profiler)
     else:
         start_main_loop()

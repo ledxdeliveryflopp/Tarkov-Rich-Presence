@@ -52,7 +52,7 @@ class VersionChecker(GitHubApi):
             else:
                 print('Установлена актуальная версия')
                 pass
-        except (httpx.ConnectTimeout, httpcore.ConnectTimeout) as exc:
+        except Exception as exc:
             logger.error(exc)
             print('Не удалось проверить версию приложения')
             pass
