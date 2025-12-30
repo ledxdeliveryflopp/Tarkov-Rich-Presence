@@ -4,6 +4,7 @@ from typing import Literal, Any
 from loguru import logger
 
 from src.analyzer.utils import analyzer_utils
+from src.const import const
 from src.settings import settings
 from src.storage import storage
 
@@ -129,8 +130,6 @@ class LogAnalyzer:
                 self.last_game_log_index = index
         return last_info
 
-    # TODO: Трайнуть читать лог с конца для скорости(меньше озу еще жрать будет) + читать лог с конца для проверки на
-    #  выход из рейда(сравнивать мб в другую сторону)
     @logger.catch
     def get_last_raid_location(self) -> (str, str) or None:
         self.__open_log_file()
@@ -193,6 +192,9 @@ class LogAnalyzer:
                 settings.game_mode = session_info
                 # logger.debug(f'Game mode info -> {line}, line index -> {index + 1}')
         logger.debug(f'Game mode -> {settings.game_mode}')
+        settings.readable_game_mode = const.modes.game_modes.get(settings.game_mode, settings.game_mode)
+        logger.info(f'Readable game mode -> {settings.readable_game_mode}')
+
 
     @logger.catch
     def get_disconnect_message(self) -> bool:

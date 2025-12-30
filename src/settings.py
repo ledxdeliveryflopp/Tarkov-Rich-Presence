@@ -15,7 +15,9 @@ class Settings:
         self.refresh_timer: int | None = None
         self.show_zero_prestige: bool | None = None
         self.game_mode: str | None = None
+        self.readable_game_mode: str | None = None
         self.profiler: str | None = None
+        self.debug: bool | None = None
         self.log_level: str | None = None
         self.user_uid: str | None = None
         self.loguru_log_file: str | None = None
@@ -66,7 +68,8 @@ class Settings:
         self.game_log_folder_path = game_log_path_settings
         self.deque_search = application_settings.deque_search
         self.deque_max_depth = application_settings.deque_max_depth
-        self.profiler = application_settings.profiler
+        self.profiler = application_settings.profilerpth
+        self.debug = application_settings.debug
         logger.debug(f'The installation of the application settings is completed -> {application_settings.__dict__}')
         logger.info('The installation of the application settings is completed!')
 
@@ -115,13 +118,15 @@ class Settings:
             self.loguru_log_file = 'eft-discord-rich-presence.log'
             self.loguru_diagnostic = True
         finally:
-            logger.remove()
+            if self.debug is False:
+                logger.remove()
             logger.add(
                 self.loguru_log_file,
                 format="{time:DD-MM-YYYY at HH:mm:ss} | {level} | {message}",
                 level=self.log_level,
                 diagnose=self.loguru_diagnostic,
             )
+            logger.debug('Debug mode on')
 
     @logger.catch
     def __build_level_range(self) -> None:

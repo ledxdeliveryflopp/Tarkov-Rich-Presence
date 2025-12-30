@@ -90,6 +90,11 @@ class GitConst:
     GITHUB_REPO: str = 'Tarkov-Rich-Presence'
 
 
+class GameModes:
+
+    game_modes: str = {'regular': 'pvp', 'pve': 'pve'}
+
+
 class Const:
 
     application: CoreConst = CoreConst()
@@ -98,6 +103,7 @@ class Const:
     levels: LevelsConst = LevelsConst()
     git: GitConst = GitConst()
     proc: Process = Process()
+    modes: GameModes = GameModes()
 
 
 const = Const()

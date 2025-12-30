@@ -30,7 +30,7 @@ class DequeService:
 
     @logger.catch
     @analyzer_utils.profiler
-    def get_user_id(self, debug: bool):
+    def get_user_id(self):
         logger.info('Get user uid...')
         line_count = 10
         while line_count < settings.deque_max_depth:
@@ -64,10 +64,6 @@ class DequeService:
         raid_uid = raid_info[1].split(':')[1]
         return tech_location, raid_uid
 
-    def open_slice_file(self, line_count: int) -> list[str]:
-        with open(settings.game_output_log_path, 'r', encoding='utf-8') as file:
-            return list(islice(file, line_count))
-
     @logger.catch
     @analyzer_utils.profiler
     def __get_game_mode(self) -> None:
@@ -85,34 +81,40 @@ class DequeService:
             line_count += 10
 
     @analyzer_utils.profiler
-    def get_game_info(self):
+    def get_raid_line(self):
         last_info = None
         line_count = 10
         while line_count < settings.deque_max_depth:
             lines = self.__open_log_file(line_count=line_count)
             for index, line in enumerate(lines):
-                if settings.game_mode == 'pve':
-                    if '[Transit] Flag:Common' in line:
-                        last_info = line
-                        logger.debug(f'Last raid info found -> {last_info}, line index -> {index + 1}')
-                        return last_info
-                elif settings.game_mode == 'regular':
-                    if 'TRACE-NetworkGameCreate profileStatus' in line:
-                        last_info = line
-                        logger.debug(f'Last raid info found -> {last_info}, line index -> {index + 1}')
-                        return last_info
+                if '[Transit] Flag:Common' in line:
+                    last_info = line
+                    logger.debug(f'Last raid info found -> {last_info}, line index -> {index + 1}')
+                    return last_info
+                elif 'TRACE-NetworkGameCreate profileStatus' in line:
+                    last_info = line
+                    logger.debug(f'Last raid info found -> {last_info}, line index -> {index + 1}')
+                    return last_info
             line_count += 10
         if not last_info:
             logger.info('Last raid info not found!')
             return None, None
+
+    def __get_location_from_pvp(self, log_info: list[str]):
+        last_info = None
+        for index, line in enumerate(log_info):
+            if 'TRACE-NetworkGameCreate profileStatus' in line:
+                last_info = line
+                self.last_game_log_index = index
+        return last_info
 
     @logger.catch
     @analyzer_utils.profiler
     def get_last_raid_location(self) -> (str, str) or None:
         logger.info('Start searching for last raid info...')
         self.__get_game_mode()
-        last_info = self.get_game_info()
-        raid_info = last_info.split(',')
+        raid_last_info = self.get_raid_line()
+        raid_info = raid_last_info.split(',')
         if settings.game_mode == 'regular':
             profile_uid_data, tech_location = self.__build_pvp_info(raid_info=raid_info)
         elif settings.game_mode == 'pve':
@@ -134,15 +136,6 @@ class DequeService:
             server_sid = raid_info[6].split(' ')[2]
             game_mode = raid_info[7].split(' ')[2]
             short_game_id = raid_info[8].split(' ')[2].replace("'", '').replace('\n', '')
-            self.__debug_raid_log(
-                profile_uid=profile_uid,
-                raid_mode=raid_mode,
-                last_game_server=self.last_game_server,
-                tech_location=tech_location,
-                server_sid=server_sid,
-                game_mode=game_mode,
-                short_game_id=short_game_id,
-            )
         logger.info(f'Last raid info found!')
         location = analyzer_utils.get_location_name(location_tech_name=tech_location, lang=settings.language)
         location_image = analyzer_utils.get_location_image(location_tech_name=tech_location)

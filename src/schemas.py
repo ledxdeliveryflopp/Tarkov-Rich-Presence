@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -9,6 +9,7 @@ class CoreLevel(BaseModel):
     log_folder_path: str
     deque_search: bool
     deque_max_depth: int
+    debug: Optional[bool] = False
 
 
 class PresenceLevel(BaseModel):

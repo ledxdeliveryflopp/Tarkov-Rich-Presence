@@ -26,7 +26,8 @@ class EftPresenceService(Presence):
     ) -> dict:
         profile_info = http_grabber.grab_user_profile()
         if game_state == 'raid':
-            presence_state = f'{const.presence.in_raid_state[settings.language]}({settings.game_mode}): {raid_location}'
+            presence_state = (f'{const.presence.in_raid_state[settings.language]}'
+                              f'({settings.readable_game_mode}): {raid_location}')
             presence_details = f'{presence_state}'
         else:
             presence_state = const.presence.in_lobby_state[settings.language]
