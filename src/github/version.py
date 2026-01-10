@@ -1,14 +1,10 @@
-import json
 import os
-import sys
 
-import httpcore
-import httpx
 from loguru import logger
 from packaging.version import Version
 
 from src.github.api import GitHubApi
-from src.github.utils import single_user_input
+from src.settings import settings
 
 
 class VersionChecker(GitHubApi):
@@ -17,45 +13,28 @@ class VersionChecker(GitHubApi):
         super().__init__()
 
     @staticmethod
-    def __get_version_from_manifest():
-        with open('release_manifest.json', 'r') as json_data:
-            data = json.load(json_data)
-            return data['tag']
-
-    def __compare_version(self, latest_version: str) -> bool:
-        current_version = self.__get_version_from_manifest()
+    def __compare_version(latest_version: str) -> bool:
+        current_version = settings.app_version
         logger.debug(f'Current version -> {current_version}')
         logger.debug(f'Latest version -> {latest_version}')
         return Version(current_version) < Version(latest_version)
 
-    # TODO: временное решение
-    @single_user_input(question='Обновить? (y/n): ')
     @logger.catch
-    def __open_installer(self, question: str) -> None:
-        if question == 'y':
-            file_path = rf'{os.getcwd()}\installer.exe'
-            os.startfile(file_path)
-            sys.exit(0)
-        elif question == 'n':
-            return None
-        else:
-            self.__open_installer()
+    def open_installer(self) -> None:
+        file_path = rf'{os.getcwd()}\installer.exe'
+        os.startfile(file_path)
 
-    def check_version(self) -> None:
+    def check_version(self) -> (str, bool):
         try:
-            print('Проверка версии приложения...')
             latest_version = self.get_latest_release_version()
             compare_result = self.__compare_version(latest_version=latest_version)
             if compare_result is True:
-                print('Вышла новая версия!')
-                self.__open_installer()
+                return f'Доступно обновление до: {latest_version}', True
             else:
-                print('Установлена актуальная версия')
-                pass
+                return 'Актуальная версия', False
         except Exception as exc:
             logger.error(exc)
-            print('Не удалось проверить версию приложения')
-            pass
+            return 'Не удалось проверить версию', False
 
 
 version_checker = VersionChecker()

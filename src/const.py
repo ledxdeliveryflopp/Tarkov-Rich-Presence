@@ -88,11 +88,17 @@ class GitConst:
     GITHUB_API: str = 'https://api.github.com/repos/'
     GITHUB_OWNER: str = 'ledxdeliveryflopp'
     GITHUB_REPO: str = 'Tarkov-Rich-Presence'
+    GITHUB_RELEASE: str = f'https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/releases/tag/'
 
 
 class GameModes:
 
     game_modes: str = {'regular': 'pvp', 'pve': 'pve'}
+
+
+class Widgets:
+
+    icon_file: str = 'tray_image.png'
 
 
 class Const:
@@ -104,6 +110,7 @@ class Const:
     git: GitConst = GitConst()
     proc: Process = Process()
     modes: GameModes = GameModes()
+    widgets: Widgets = Widgets()
 
 
 const = Const()

@@ -1,3 +1,4 @@
+import json
 import os
 
 import yaml
@@ -27,6 +28,8 @@ class Settings:
         self.locations_data: dict | None = None
         self.deque_search: bool | None = None
         self.deque_max_depth: int | None = None
+        self.app_version: str | None = None
+        self.current_version_html: str | None = None
 
     @property
     @logger.catch(reraise=True)
@@ -34,6 +37,16 @@ class Settings:
         with open('settings.yml', encoding='utf-8') as settings_data:
             data = yaml.load(settings_data, Loader=SafeLoader)
         return data
+
+    @staticmethod
+    def __get_version_from_manifest():
+        with open('release_manifest.json', 'r') as json_data:
+            data = json.load(json_data)
+            return data['tag']
+
+    def set_app_version(self):
+        self.app_version = self.__get_version_from_manifest()
+        self.current_version_html = f'{const.git.GITHUB_RELEASE}{self.app_version}'
 
     @logger.catch
     def __set_locations_data(self) -> None:
@@ -68,7 +81,7 @@ class Settings:
         self.game_log_folder_path = game_log_path_settings
         self.deque_search = application_settings.deque_search
         self.deque_max_depth = application_settings.deque_max_depth
-        self.profiler = application_settings.profilerpth
+        self.profiler = application_settings.profiler
         self.debug = application_settings.debug
         logger.debug(f'The installation of the application settings is completed -> {application_settings.__dict__}')
         logger.info('The installation of the application settings is completed!')
