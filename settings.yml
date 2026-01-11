@@ -8,4 +8,4 @@ settings:
     log_folder_path: logs
     deque_search: False
     deque_max_depth: 1
-    debug: True
+    debug: False
