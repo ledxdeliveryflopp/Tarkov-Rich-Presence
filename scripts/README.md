@@ -1,7 +1,7 @@
 ## Сборка приложения
 
 ```shell
-python -m scripts.builder --version "<tag>" --path main.py --icon-path main_icon.ico --onefile --additional-files release_manifest.json, tray_image.png, settings.yml, locations.yml, logger.yml
+python -m scripts.builder --version "<tag>" --path main.py --icon-path <icon/path> --onefile --additional-files <assets/path>
 ```
 
 ## Публикация релиза
