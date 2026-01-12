@@ -41,7 +41,6 @@ class TrayWidget(QWidget):
             self.update_action.setText(message)
             if result is True:
                 self.update_action.triggered.connect(self.update_app)
-                self.update_action.triggered.connect(version_checker.open_installer)
                 self.menu.addAction(self.update_action)
                 self.tray.setContextMenu(self.menu)
 

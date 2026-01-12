@@ -1,7 +1,7 @@
 ## Сборка приложения
 
 ```shell
-python -m scripts.builder --version "<tag>" --path main.py --icon-path <icon/path> --onefile --additional-files <assets/path>
+python -m scripts.builder --version "<tag>" --installer-version "<tag>" --path main.py --icon-path <icon/path> --onefile --additional-files <assets/path>
 ```
 
 ## Публикация релиза
