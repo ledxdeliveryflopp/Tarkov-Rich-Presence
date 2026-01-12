@@ -11,6 +11,7 @@ class VersionChecker(GitHubApi):
 
     def __init__(self):
         super().__init__()
+        self.installer_path: str = rf'{os.getcwd()}\installer.exe'
 
     @staticmethod
     def __compare_version(latest_version: str) -> bool:
@@ -20,24 +21,23 @@ class VersionChecker(GitHubApi):
         return Version(current_version) < Version(latest_version)
 
     @logger.catch
-    def open_installer(self) -> None:
-        file_path = rf'{os.getcwd()}\installer.exe'
-        installer_exist = os.path.exists(file_path)
+    def open_installer(self) -> bool:
+        installer_exist = os.path.exists(self.installer_path)
         if installer_exist is True:
-            os.startfile(file_path)
+            os.startfile(self.installer_path)
+            return True
         else:
-            logger.error(f'Installer not found at -> {file_path}')
-            pass
+            logger.error(f'Installer not found at -> {self.installer_path}')
+            return False
 
     @logger.catch
     def check_installer(self) -> bool:
-        installer_path = rf'{os.getcwd()}\installer.exe'
-        installer_exist = os.path.exists(installer_path)
+        installer_exist = os.path.exists(self.installer_path)
         if installer_exist is True:
-            logger.info(f'Installer exist at path -> {installer_path}')
+            logger.info(f'Installer exist at path -> {self.installer_path}')
             return True
         else:
-            logger.info(f'Installer not exist at path -> {installer_path}')
+            logger.info(f'Installer not exist at path -> {self.installer_path}')
             return False
 
     def check_version(self) -> (str, bool):

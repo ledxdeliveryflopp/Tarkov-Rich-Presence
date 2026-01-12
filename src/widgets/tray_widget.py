@@ -47,8 +47,11 @@ class TrayWidget(QWidget):
 
     def update_app(self) -> None:
         logger.info('Closing app for update.')
-        version_checker.open_installer()
-        self.app.exit()
+        installer_status = version_checker.open_installer()
+        if installer_status is True:
+            self.app.exit()
+        else:
+            self.update_action.setText(f'Не найден установщик, обновление невозможно')
 
     @logger.catch
     def open_release_page(self) -> None:
