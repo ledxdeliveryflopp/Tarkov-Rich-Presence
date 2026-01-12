@@ -53,6 +53,7 @@ def create_release(release_version: str) -> str:
         },
         json={
             'tag_name': release_version,
+            'name': release_version,
             'target_commitish': 'V1.0.0',
             'body': get_release_note(),
             'draft': False,

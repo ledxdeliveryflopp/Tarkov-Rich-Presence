@@ -22,7 +22,23 @@ class VersionChecker(GitHubApi):
     @logger.catch
     def open_installer(self) -> None:
         file_path = rf'{os.getcwd()}\installer.exe'
-        os.startfile(file_path)
+        installer_exist = os.path.exists(file_path)
+        if installer_exist is True:
+            os.startfile(file_path)
+        else:
+            logger.error(f'Installer not found at -> {file_path}')
+            pass
+
+    @logger.catch
+    def check_installer(self) -> bool:
+        installer_path = rf'{os.getcwd()}\installer.exe'
+        installer_exist = os.path.exists(installer_path)
+        if installer_exist is True:
+            logger.info(f'Installer exist at path -> {installer_path}')
+            return True
+        else:
+            logger.info(f'Installer not exist at path -> {installer_path}')
+            return False
 
     def check_version(self) -> (str, bool):
         try:

@@ -33,12 +33,22 @@ class TrayWidget(QWidget):
         self.update_worker.start()
 
     def check_version(self) -> None:
-        message, result = version_checker.check_version()
-        self.update_action.setText(message)
-        if result is True:
-            self.update_action.triggered.connect(version_checker.open_installer)
-            self.menu.addAction(self.update_action)
-            self.tray.setContextMenu(self.menu)
+        installer_exist = version_checker.check_installer()
+        if installer_exist is False:
+            self.update_action.setText(f'Не найден установщик, обновление невозможно')
+        else:
+            message, result = version_checker.check_version()
+            self.update_action.setText(message)
+            if result is True:
+                self.update_action.triggered.connect(self.update_app)
+                self.update_action.triggered.connect(version_checker.open_installer)
+                self.menu.addAction(self.update_action)
+                self.tray.setContextMenu(self.menu)
+
+    def update_app(self) -> None:
+        logger.info('Closing app for update.')
+        version_checker.open_installer()
+        self.app.exit()
 
     @logger.catch
     def open_release_page(self) -> None:
