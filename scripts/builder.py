@@ -46,11 +46,12 @@ def set_default_app_settings() -> None:
         yaml.safe_dump(data, file)
 
 
-def set_release_version(release_version: str) -> None:
+def set_release_version(release_version: str, installer_version: str) -> None:
     print('---ЗАПИСЬ-ИНФОРМАЦИИ-О-РЕЛИЗЕ---')
     with open('dist/release_manifest.json', 'r') as file:
         data = json.load(file)
     data['tag'] = release_version
+    data['installer_required'] = installer_version
     with open('dist/release_manifest.json', 'w') as new_file:
         json.dump(data, new_file, indent=4)
 
@@ -85,6 +86,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--version', type=str, help='Версия сборки', required=True)
+    parser.add_argument('--installer-version', type=str, help='Версия установщика', required=True)
     parser.add_argument('--path', type=str, help='Целевой файл сборки', required=True)
     parser.add_argument('--icon-path', type=str, help='Файл иконки', required=True)
     parser.add_argument('--onefile', action='store_true', help='Упаковка в один файл')
@@ -113,7 +115,7 @@ if __name__ == '__main__':
     build_app(build_info=app_spec)
     copy_additional_files(files=params.additional_files)
     set_default_app_settings()
-    set_release_version(release_version=params.version)
+    set_release_version(release_version=params.version, installer_version=params.installer_version)
     copy_browser_dir()
     zip_release()
     print('---СБОРКА-ЗАВЕРШЕНА---')
