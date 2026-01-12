@@ -24,7 +24,7 @@ class Const:
 
 def get_release_note() -> str:
     print('---ЧТЕНИЕ-ОПИСАНИЯ-РЕЛИЗА---')
-    with open('scripts/release_note.md', 'r') as f:
+    with open('scripts/release_note.md', 'r', encoding='utf-8') as f:
         data = f.read()
     return data
 
@@ -38,8 +38,9 @@ def check_release_manifest_tag(release_tag: str, manifest_path: str) -> None:
     else:
         print('НЕ СОВПАДАЮТ ТЭГИ РЕЛИЗА!')
         print(f'Тэг манифеста -> {release_manifest_tag}')
-        print(f'Указанный тэ -> {release_tag}')
+        print(f'Указанный тэг -> {release_tag}')
         sys.exit()
+
 
 def create_release(release_version: str) -> str:
     print('---СОЗДАНИЕ-РЕЛИЗА---')

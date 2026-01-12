@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 import os
 import shutil
 
@@ -103,6 +104,7 @@ def clear_dist_dir() -> None:
 
 
 if __name__ == '__main__':
+    logging.disable(logging.ERROR)
     print('---НАЧАЛО-СБОРКИ---')
     params = parse_args()
     clear_dist_dir()
