@@ -82,7 +82,10 @@ def upload_assets(release_id: str, asset_list: list[str]) -> None:
     for asset_path in asset_list:
         with open(asset_path, 'rb') as asset_file:
             file_data = asset_file.read()
+            asset_content_type = 'application/octet-stream'
             asset_name = get_asset_name(asset_path=asset_path)
+            print(f'Загрузка -> {asset_name}')
+            print(f'content-type -> {asset_content_type}')
             response = httpx.post(
                 url=f'{Const.upload_asset_url}{release_id}/assets?',
                 params={'name': asset_name},
@@ -90,9 +93,9 @@ def upload_assets(release_id: str, asset_list: list[str]) -> None:
                     'Authorization': f'Bearer {Const.token}',
                     'Accept': 'application/vnd.github+json',
                     'X-GitHub-Api-Version': Const.api_version,
-                    'content-type': 'multipart/form-data',
+                    'content-type': asset_content_type,
                 },
-                files={'data': file_data},
+                data=file_data,
                 timeout=120,
             )
             if response.status_code == HTTPStatus.CREATED:
@@ -114,9 +117,9 @@ def upload_manifest(manifest_path: str) -> None:
                 'Authorization': f'Bearer {Const.token}',
                 'Accept': 'application/vnd.github+json',
                 'X-GitHub-Api-Version': Const.api_version,
-                'content-type': 'multipart/form-data',
+                'content-type': 'application/octet-stream',
             },
-            files={'data': file_data},
+            data=file_data,
             timeout=120,
         )
         if response.status_code == HTTPStatus.CREATED:
