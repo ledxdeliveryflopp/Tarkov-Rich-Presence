@@ -74,7 +74,7 @@ def build_app_spec(build_params: argparse.Namespace) -> list[str]:
     main_file_ico = build_params.icon_path
     onefile = build_params.onefile
     onefile_param = check_onefile(one_file_param=onefile)
-    app_base_spec = [main_file_path, '--icon', main_file_ico]
+    app_base_spec = [main_file_path, '--name=EFTDRP', '--icon', main_file_ico]
     if onefile_param:
         app_base_spec.append(onefile_param)
     app_base_spec.append(windowed_mode)
@@ -101,6 +101,7 @@ def clear_dist_dir() -> None:
     path_exist = os.path.exists('dist')
     if path_exist is True:
         shutil.rmtree('dist')
+        print('---ПАПКИ-СБОРКИ-ОЧИЩЕНА---')
 
 
 if __name__ == '__main__':
