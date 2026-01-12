@@ -1,5 +1,5 @@
 import time
-from typing import Literal, Any
+from typing import Any
 
 from loguru import logger
 
@@ -188,13 +188,11 @@ class LogAnalyzer:
         lines = self.log_file_data
         for index, line in enumerate(lines):
             if 'application|Session mode:' in line:
-                session_info = line.split(':')[-1].strip().lower()
+                session_info = line.split(':')[-1].strip().lower().replace(' ', '')
                 settings.game_mode = session_info
-                # logger.debug(f'Game mode info -> {line}, line index -> {index + 1}')
         logger.debug(f'Game mode -> {settings.game_mode}')
         settings.readable_game_mode = const.modes.game_modes.get(settings.game_mode, settings.game_mode)
         logger.info(f'Readable game mode -> {settings.readable_game_mode}')
-
 
     @logger.catch
     def get_disconnect_message(self) -> bool:
