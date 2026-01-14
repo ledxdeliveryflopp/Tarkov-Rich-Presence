@@ -3,17 +3,6 @@
 
 **Интеграция Discord rich presence для игры Escape From Tarkov.**
 
-![img.png](/git_static/interchange.png)
-
-![img.png](/git_static/lab.png)
-
-![img.png](/git_static/interchange.png)
-
-![img.png](/git_static/main.png)
-
-![img.png](/git_static/terminal.png)
-
-
 ### Особенности
 1) Обновления через приложение + установщик
 2) Фоновая работа в трее
@@ -21,6 +10,30 @@
 4) Определение имени профиля + уровня + престижа + фракции
 5) Определение режима игры
 6) Подсчет игроков в пати
+
+
+### Примеры
+
+1) Игрок находится в схроне
+
+![img.png](/git_static/main.png)
+
+
+2) Игрок в пве рейде
+
+
+![img.png](/git_static/terminal.png)
+
+
+3) Игрок находится в пвп рейде
+
+
+![img.png](/git_static/lab.png)
+
+4) Игрок находится в отряде с другими игроками
+
+
+![img.png](/git_static/interchange.png)
 
 
 ### Как использовать
