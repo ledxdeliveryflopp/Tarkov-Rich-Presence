@@ -1,3 +1,5 @@
+from pypresence import DiscordError, DiscordNotFound, PipeClosed, InvalidPipe
+
 
 class LevelsConst:
 
@@ -101,6 +103,13 @@ class Widgets:
     icon_file: str = 'tray_image.png'
 
 
+class Loguru:
+
+    ignored_presence_exceptions: tuple = (
+        BrokenPipeError, DiscordError, DiscordNotFound, PipeClosed, InvalidPipe, AssertionError,
+    )
+
+
 class Const:
 
     application: CoreConst = CoreConst()
@@ -111,6 +120,7 @@ class Const:
     proc: Process = Process()
     modes: GameModes = GameModes()
     widgets: Widgets = Widgets()
+    loguru_exc: Loguru = Loguru()
 
 
 const = Const()

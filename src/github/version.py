@@ -1,3 +1,4 @@
+import ctypes
 import os
 
 from loguru import logger
@@ -20,11 +21,28 @@ class VersionChecker(GitHubApi):
         logger.debug(f'Latest version -> {latest_version}')
         return Version(current_version) < Version(latest_version)
 
+    @staticmethod
+    @logger.catch
+    def run_as_admin(installer_path: str, install_dir: str):
+        if ctypes.windll.shell32.IsUserAnAdmin():
+            logger.info(f'User already has admin privileges')
+            os.system(installer_path)
+        else:
+            logger.info(f'Trying to start installer with path -> {installer_path} {install_dir} with admin privileges')
+            ctypes.windll.shell32.ShellExecuteW(
+                None,
+                "runas",
+                installer_path,
+                install_dir or "",
+                None,
+                1
+            )
+
     @logger.catch
     def open_installer(self) -> bool:
         installer_exist = os.path.exists(self.installer_path)
         if installer_exist is True:
-            os.startfile(self.installer_path)
+            self.run_as_admin(installer_path=self.installer_path, install_dir=fr'--install-path {os.getcwd()}/')
             return True
         else:
             logger.error(f'Installer not found at -> {self.installer_path}')

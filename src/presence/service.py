@@ -2,10 +2,11 @@ import time
 from typing import Optional, Literal
 
 from loguru import logger
-from pypresence import Presence, ActivityType
+from pypresence import Presence, ActivityType, DiscordError, DiscordNotFound, PipeClosed, InvalidPipe
+from pypresence.utils import get_ipc_path
 
 from src.analyzer.service import log_analyzer
-from src.const import const
+from src.const import const, Const
 from src.profile.service import http_grabber
 from src.settings import settings
 from src.storage import storage
@@ -15,9 +16,25 @@ class EftPresenceService(Presence):
 
     def __init__(self):
         super().__init__(client_id='1441056758645915698')
-        self.connect()
 
-    @logger.catch
+    def get_discord_pipe(self):
+        return get_ipc_path(self.pipe)
+
+    def connect_to_discord(self) -> None:
+        try:
+            logger.info(f'Trying to connecting to Discord')
+            self.connect()
+        except Exception as e:
+            logger.error(f'Error while connecting to Discord -> {e}')
+
+    def disconnect_from_discord(self) -> None:
+        try:
+            logger.info(f'Trying to disconnect from Discord')
+            self.close()
+        except Exception as e:
+            logger.error(f'Error while disconnecting from Discord -> {e}')
+
+    @logger.catch(exclude=Const.loguru_exc.ignored_presence_exceptions)
     def __build_presence_info(
             self,
             game_state: Literal['raid', 'lobby'],
@@ -57,7 +74,7 @@ class EftPresenceService(Presence):
         logger.debug(f'Presence info -> {info}')
         return info
 
-    @logger.catch
+    @logger.catch(exclude=Const.loguru_exc.ignored_presence_exceptions)
     def __set_presence(
             self,
             game_state: Literal['raid', 'lobby'],
@@ -95,7 +112,6 @@ class EftPresenceService(Presence):
         )
         logger.info(f'{game_state} presence set successfully!')
 
-    @logger.catch
     def set_presence(self):
         logger.info('---------------SET PRESENCE---------------')
         raid_location, location_image = log_analyzer.get_last_raid_location()

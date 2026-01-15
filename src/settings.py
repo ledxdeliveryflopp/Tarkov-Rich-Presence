@@ -111,6 +111,7 @@ class Settings:
         logger.info(f'EFT output log was found!')
 
     def delete_saved_log_path(self) -> None:
+        logger.info(f'Delete current game log path')
         self.game_output_log_path = None
 
     def __validate_settings_levels(self) -> SettingsSchemas:
@@ -139,7 +140,6 @@ class Settings:
                 level=self.log_level,
                 diagnose=self.loguru_diagnostic,
             )
-            logger.debug('Debug mode on')
 
     @logger.catch
     def __build_level_range(self) -> None:

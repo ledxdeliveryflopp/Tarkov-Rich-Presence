@@ -1,4 +1,5 @@
 import cProfile
+import os
 
 from PySide6.QtWidgets import QApplication
 from loguru import logger
@@ -20,5 +21,6 @@ def application_setup(c_profiler: cProfile.Profile):
 
 if __name__ == '__main__':
     settings.set_logger()
+    logger.info(f'App started from -> {os.getcwd()}')
     profiler = cProfile.Profile()
     application_setup(c_profiler=profiler)
