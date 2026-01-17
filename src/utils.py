@@ -22,4 +22,7 @@ def find_eft_process() -> bool:
                 continue
         except (psutil.NoSuchProcess, psutil.AccessDenied) as exc:
             logger.warning(exc)
-            return False
+            if proc_name is not None and proc_name == const.proc.game_proc_name:
+                return False
+            else:
+                continue
