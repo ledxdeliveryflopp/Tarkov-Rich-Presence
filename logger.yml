@@ -1,0 +1,4 @@
+logger:
+  level: TRACE
+  file: eft-discord-rich-presence-{time}.log
+  diagnostic: True

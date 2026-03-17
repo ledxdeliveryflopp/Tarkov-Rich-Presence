@@ -1,0 +1,11 @@
+settings:
+  language: ru
+  presence:
+    refresh_time: 8
+    show_zero_prestige: False
+  core:
+    profiler: False
+    log_folder_path: logs
+    deque_search: False
+    deque_max_depth: 1
+    debug: False
